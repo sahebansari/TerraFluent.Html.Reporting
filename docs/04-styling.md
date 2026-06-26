@@ -2,7 +2,7 @@
 
 ## `TextStyle`
 
-[`TextStyle`](../src/FluentHtmlReport/Model/Styling/TextStyle.cs) is the
+[`TextStyle`](../src/TerraFluent.Html.Reporting/Model/Styling/TextStyle.cs) is the
 immutable style record behind every text-bearing element (`Paragraph`,
 `Heading`, `PageNumberText`, list items, table cells). `TextStyle.Default` is
 used when an element doesn't specify one:
@@ -34,7 +34,7 @@ font size.
 ## Fluent modifiers (`TextElementBuilder`)
 
 `AddParagraph`/`AddHeading`/`AddText`/`AddPageNumber` all return a
-[`TextElementBuilder`](../src/FluentHtmlReport/Fluent/TextElementBuilder.cs),
+[`TextElementBuilder`](../src/TerraFluent.Html.Reporting/Fluent/TextElementBuilder.cs),
 which exposes:
 
 ```csharp
@@ -108,7 +108,7 @@ any of these while keeping the semantic `<h1>`-`<h6>` tag the level implies.
 ## Images
 
 `AddImage`/`AddImageFromBase64` return an
-[`ImageElementBuilder`](../src/FluentHtmlReport/Fluent/ImageElementBuilder.cs):
+[`ImageElementBuilder`](../src/TerraFluent.Html.Reporting/Fluent/ImageElementBuilder.cs):
 
 ```csharp
 c.AddImage("logo.png", widthPx: 96)
@@ -131,11 +131,11 @@ c.AddImage("logo.png", widthPx: 96)
   measures from) since an image with no visible border or background
   otherwise has nothing to "pad away from".
 
-Model type: [`ReportImage`](../src/FluentHtmlReport/Model/Elements/ReportImage.cs).
+Model type: [`ReportImage`](../src/TerraFluent.Html.Reporting/Model/Elements/ReportImage.cs).
 
 ## Rows and row columns
 
-`AddRow` returns a [`RowHandle`](../src/FluentHtmlReport/Fluent/RowHandle.cs)
+`AddRow` returns a [`RowHandle`](../src/TerraFluent.Html.Reporting/Fluent/RowHandle.cs)
 with margin modifiers for the row as a whole:
 
 ```csharp
@@ -143,7 +143,7 @@ c.AddRow(row => { ... }).Margin(12).MarginTop(20);
 ```
 
 `RowBuilder.AddColumn` returns a
-[`RowColumnHandle`](../src/FluentHtmlReport/Fluent/RowColumnHandle.cs) with
+[`RowColumnHandle`](../src/TerraFluent.Html.Reporting/Fluent/RowColumnHandle.cs) with
 padding modifiers for that one column's inset from its own edges:
 
 ```csharp

@@ -1,6 +1,6 @@
 # Extending the Library
 
-FluentHtmlReport has three deliberate extension seams: the text measurer
+TerraFluent.Html.Reporting has three deliberate extension seams: the text measurer
 used for pagination, the renderer used to turn a layout into HTML, and the
 element contract itself. None of them require forking the library - each is
 a small interface the engine talks to abstractly.
@@ -12,7 +12,7 @@ enough for your needs - see [Text Measurement](09-text-measurement.md) for
 why it's only approximate in the first place.
 
 ```csharp
-using FluentHtmlReport.Measurement;
+using TerraFluent.Html.Reporting.Measurement;
 
 public sealed class MyPreciseTextMeasurer : ITextMeasurer
 {
@@ -72,8 +72,8 @@ Implement this when you need different output shape than the bundled
 metadata embedded in the markup, or PDF-engine-specific tweaks.
 
 ```csharp
-using FluentHtmlReport.Layout;
-using FluentHtmlReport.Rendering;
+using TerraFluent.Html.Reporting.Layout;
+using TerraFluent.Html.Reporting.Rendering;
 
 public sealed class MyCustomRenderer : IHtmlReportRenderer
 {
@@ -140,9 +140,9 @@ Implement this when none of the built-in elements
 (e.g. you want the engine to measure and split your content automatically).
 
 ```csharp
-using FluentHtmlReport.Layout;
-using FluentHtmlReport.Model;
-using FluentHtmlReport.Rendering;
+using TerraFluent.Html.Reporting.Layout;
+using TerraFluent.Html.Reporting.Model;
+using TerraFluent.Html.Reporting.Rendering;
 
 public sealed class Watermark : IReportElement
 {
@@ -191,7 +191,7 @@ that's what makes the "force-place on an empty page + warn" fallback in the
 layout engine kick in correctly instead of looping.
 
 **HTML-encode any user-supplied text yourself** inside `RenderHtml` (mirror
-[`CssFormat.Encode`](../src/FluentHtmlReport/Rendering/CssFormat.cs)'s use of
+[`CssFormat.Encode`](../src/TerraFluent.Html.Reporting/Rendering/CssFormat.cs)'s use of
 `WebUtility.HtmlEncode`) unless you specifically intend to emit raw markup -
 nothing upstream of your element does this for you.
 

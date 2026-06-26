@@ -16,7 +16,7 @@ c.AddTable(table =>
 });
 ```
 
-[`TableBuilder`](../src/FluentHtmlReport/Fluent/TableBuilder.cs) methods:
+[`TableBuilder`](../src/TerraFluent.Html.Reporting/Fluent/TableBuilder.cs) methods:
 
 - **`AddColumns(params string[] headers)`** - one auto-width column per
   header string.
@@ -62,7 +62,7 @@ for why the `<table>` itself is deliberately *not* pinned to `width:100%`.
 
 ## `TableStyle`
 
-[`TableStyle`](../src/FluentHtmlReport/Model/Styling/TableStyle.cs) controls
+[`TableStyle`](../src/TerraFluent.Html.Reporting/Model/Styling/TableStyle.cs) controls
 everything visual about a table:
 
 | Property | Default | Notes |
@@ -151,7 +151,7 @@ border line. The table's total measured height adds one extra `BorderWidthPx`
 for the outermost top edge that no row otherwise accounts for. This border
 accounting exists specifically so the `overflow:hidden` container the table
 renders inside isn't sized a hair too short - see the inline remarks on
-[`Table.MeasureRowHeight`](../src/FluentHtmlReport/Model/Elements/Table.cs)
+[`Table.MeasureRowHeight`](../src/TerraFluent.Html.Reporting/Model/Elements/Table.cs)
 if you're curious about the exact reasoning (it was a real, since-fixed bug:
 omitting it silently clipped the last row's bottom border).
 

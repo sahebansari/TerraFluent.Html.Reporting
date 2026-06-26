@@ -19,7 +19,7 @@ c.AddRow(row =>
 });
 ```
 
-[`RowBuilder`](../src/FluentHtmlReport/Fluent/RowBuilder.cs) has two
+[`RowBuilder`](../src/TerraFluent.Html.Reporting/Fluent/RowBuilder.cs) has two
 `AddColumn` overloads:
 
 - **`AddColumn(Action<RowColumnBuilder> configure)`** - an auto-width column

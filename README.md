@@ -1,4 +1,4 @@
-# FluentHtmlReport
+# TerraFluent.Html.Reporting
 
 A fluent .NET library for generating paginated, print-ready HTML reports - the
 same kind of fixed-page layout you get from a PDF report generator (TerraPDF, iText,
@@ -43,15 +43,15 @@ Full documentation lives in [docs/](docs/README.md):
 - [Extending the Library](docs/11-extending.md)
 - [FAQ / Troubleshooting](docs/12-faq-troubleshooting.md)
 
-The [samples/FluentHtmlReport.Sample](samples/FluentHtmlReport.Sample) project
+The [samples/TerraFluent.Html.Reporting.Sample](samples/TerraFluent.Html.Reporting.Sample) project
 is a runnable companion to the docs - run it to generate eleven example
 reports as HTML files you can open straight in a browser.
 
 ## Repository layout
 
-- [src/FluentHtmlReport](src/FluentHtmlReport) - the library itself.
-- [samples/FluentHtmlReport.Sample](samples/FluentHtmlReport.Sample) - runnable scenarios demonstrating most of the API.
-- [tests/FluentHtmlReport.Tests](tests/FluentHtmlReport.Tests) - unit and pagination tests.
+- [src/TerraFluent.Html.Reporting](src/TerraFluent.Html.Reporting) - the library itself.
+- [samples/TerraFluent.Html.Reporting.Sample](samples/TerraFluent.Html.Reporting.Sample) - runnable scenarios demonstrating most of the API.
+- [tests/TerraFluent.Html.Reporting.Tests](tests/TerraFluent.Html.Reporting.Tests) - unit and pagination tests.
 - [docs/](docs/README.md) - the documentation set linked above.
 - [CHANGELOG.md](CHANGELOG.md) - notable changes per release.
 

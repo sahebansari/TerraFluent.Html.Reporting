@@ -2,7 +2,7 @@
 
 ## The pipeline: model → layout → render
 
-FluentHtmlReport is built as three distinct stages, each in its own
+TerraFluent.Html.Reporting is built as three distinct stages, each in its own
 namespace, connected only by simple data:
 
 ```
@@ -12,22 +12,22 @@ Fluent (builders)  -->  Model (immutable elements)  -->  Layout (pagination)  --
   TableBuilder, RowBuilder ...                              (pages, placements)
 ```
 
-- **`FluentHtmlReport.Fluent`** - the builders you actually call
+- **`TerraFluent.Html.Reporting.Fluent`** - the builders you actually call
   (`ReportDocumentBuilder`, `ContentBuilder`, `PageSectionBuilder`,
   `TableBuilder`, `RowBuilder`, ...). These exist purely to give you a nice
   chaining API; they hold mutable lists internally but produce immutable
   model objects.
-- **`FluentHtmlReport.Model`** (and `Model.Elements`, `Model.Styling`,
+- **`TerraFluent.Html.Reporting.Model`** (and `Model.Elements`, `Model.Styling`,
   `Model.Sections`) - the immutable document: `ReportDocument`,
   `IReportElement` implementations (`Paragraph`, `Table`, `Row`, ...),
   `TextStyle`, `TableStyle`. Nothing here knows how to paginate or render
   itself in isolation - each element only knows how to measure and split
   *itself*.
-- **`FluentHtmlReport.Layout`** - `LayoutEngine.Paginate` walks the document's
+- **`TerraFluent.Html.Reporting.Layout`** - `LayoutEngine.Paginate` walks the document's
   content elements once, in order, deciding what goes on which page. The
   output, a `LayoutResult`, is a plain description of pages and placements -
   no HTML anywhere yet.
-- **`FluentHtmlReport.Rendering`** - `HtmlReportRenderer` walks a
+- **`TerraFluent.Html.Reporting.Rendering`** - `HtmlReportRenderer` walks a
   `LayoutResult` and asks each placed element to render itself as HTML at its
   resolved position.
 
@@ -40,14 +40,14 @@ before deciding whether to render at all. See
 
 ## The document model
 
-[`ReportDocument`](../src/FluentHtmlReport/Model/ReportDocument.cs) is the
+[`ReportDocument`](../src/TerraFluent.Html.Reporting/Model/ReportDocument.cs) is the
 root: page geometry (`PageSize`, `Orientation`, `Margins`), an optional
 `Header`/`Footer` (`IPageSection`), the top-level `ContentElements`, and the
 `TextMeasurer` to lay out with. It is immutable and can only be constructed
 via `ReportDocument.Create(...)` followed by `ReportDocumentBuilder.Build()`.
 
 Every piece of content - a paragraph, a table, a row of columns - implements
-[`IReportElement`](../src/FluentHtmlReport/Model/IReportElement.cs):
+[`IReportElement`](../src/TerraFluent.Html.Reporting/Model/IReportElement.cs):
 
 ```csharp
 public interface IReportElement
@@ -79,7 +79,7 @@ c.AddParagraph("Note").Bold().FontSize(16)
 ```
 
 `AddParagraph` adds an initial `Paragraph` to the content list and returns a
-[`TextElementBuilder`](../src/FluentHtmlReport/Fluent/TextElementBuilder.cs)
+[`TextElementBuilder`](../src/TerraFluent.Html.Reporting/Fluent/TextElementBuilder.cs)
 that remembers *where* in that list the paragraph lives. Each chained call
 (`.Bold()`, then `.FontSize(16)`) calls `Style.With(...)`, builds a brand new
 `Paragraph` with the updated style, and replaces the old one at that same

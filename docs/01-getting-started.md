@@ -2,11 +2,11 @@
 
 ## Installation
 
-FluentHtmlReport targets both `netstandard2.0` and `net10.0` and has zero
+TerraFluent.Html.Reporting targets both `netstandard2.0` and `net10.0` and has zero
 third-party dependencies. Add the package to your project:
 
 ```
-dotnet add package FluentHtmlReport
+dotnet add package TerraFluent.Html.Reporting
 ```
 
 ## The four-step pipeline
@@ -14,8 +14,8 @@ dotnet add package FluentHtmlReport
 Every report follows the same shape:
 
 ```csharp
-using FluentHtmlReport.Model;
-using FluentHtmlReport.Model.Elements;
+using TerraFluent.Html.Reporting.Model;
+using TerraFluent.Html.Reporting.Model.Elements;
 
 var report = ReportDocument.Create(PageSize.A4, PageOrientation.Portrait)  // 1. start
     .SetMargins(40, 40, 60, 60)
@@ -38,14 +38,14 @@ string html = report.RenderHtml();                                        // 4. 
 ```
 
 1. **`ReportDocument.Create(pageSize, orientation)`** returns a
-   [`ReportDocumentBuilder`](../src/FluentHtmlReport/Fluent/ReportDocumentBuilder.cs)
+   [`ReportDocumentBuilder`](../src/TerraFluent.Html.Reporting/Fluent/ReportDocumentBuilder.cs)
    - despite living on `ReportDocument`, this is the fluent entry point, not
    the document itself.
 2. **`.SetMargins(...)`, `.Header(...)`, `.Footer(...)`, `.Content(...)`**
    configure the builder. `Header`/`Footer`/`Content` each take an
    `Action<TBuilder>` callback - calling any of them more than once *appends*
    to the same section rather than replacing it.
-3. **`.Build()`** produces an immutable [`ReportDocument`](../src/FluentHtmlReport/Model/ReportDocument.cs).
+3. **`.Build()`** produces an immutable [`ReportDocument`](../src/TerraFluent.Html.Reporting/Model/ReportDocument.cs).
    Nothing is measured or paginated yet.
 4. **`.RenderHtml(...)`** (or one of its siblings - see
    [Rendering](08-rendering.md)) paginates the document and returns a single,
@@ -79,7 +79,7 @@ string html = report.RenderHtml();                                        // 4. 
 The fastest way to see the library in action is the bundled sample project:
 
 ```
-dotnet run --project samples/FluentHtmlReport.Sample
+dotnet run --project samples/TerraFluent.Html.Reporting.Sample
 ```
 
 This writes eleven HTML files (one per scenario, e.g.
@@ -87,7 +87,7 @@ This writes eleven HTML files (one per scenario, e.g.
 `10-sales-invoice.html`) to the build output directory and prints how many
 pages each one produced, plus any `LayoutWarning`s. Open any of them in a
 browser - what you see is exactly what "Print to PDF" will produce. See
-[`samples/FluentHtmlReport.Sample/Program.cs`](../samples/FluentHtmlReport.Sample/Program.cs)
+[`samples/TerraFluent.Html.Reporting.Sample/Program.cs`](../samples/TerraFluent.Html.Reporting.Sample/Program.cs)
 for the full scenario list, and the [Cookbook](10-cookbook.md) for some of
 them adapted into standalone recipes.
 

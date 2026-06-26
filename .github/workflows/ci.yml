@@ -29,7 +29,7 @@ jobs:
         run: dotnet test --configuration Release --no-build --verbosity normal
 
       - name: Pack
-        run: dotnet pack src/FluentHtmlReport/FluentHtmlReport.csproj --configuration Release --no-build --output artifacts
+        run: dotnet pack src/TerraFluent.Html.Reporting/TerraFluent.Html.Reporting.csproj --configuration Release --no-build --output artifacts
 
       - name: Upload package artifacts
         uses: actions/upload-artifact@v4

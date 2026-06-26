@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/TerraFluent.Html.Reporting.Sample/TerraFluent.Html.Reporting.Sample.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/TerraFluent.Html.Reporting/TerraFluent.Html.Reporting.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TerraFluent.Html.Reporting.Tests/TerraFluent.Html.Reporting.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,6 +1,6 @@
-# FluentHtmlReport Documentation
+# TerraFluent.Html.Reporting Documentation
 
-FluentHtmlReport is a fluent, zero-dependency .NET library for generating
+TerraFluent.Html.Reporting is a fluent, zero-dependency .NET library for generating
 paginated, print-ready HTML reports: fixed page sizes, repeating headers and
 footers, and content (text, images, tables, lists) that is measured and split
 across pages the way a PDF report generator would, but rendered as a single
@@ -52,6 +52,6 @@ If you're new to the library, read these in order:
   modifiers directly onto the call that added the element, e.g.
   `c.AddImage("logo.png").AlignCenter().Margin(8)`.
 - **Code samples are runnable.** Most snippets in this documentation are
-  adapted from the [samples/FluentHtmlReport.Sample](../samples/FluentHtmlReport.Sample)
-  project. Run it (`dotnet run --project samples/FluentHtmlReport.Sample`) to
+  adapted from the [samples/TerraFluent.Html.Reporting.Sample](../samples/TerraFluent.Html.Reporting.Sample)
+  project. Run it (`dotnet run --project samples/TerraFluent.Html.Reporting.Sample`) to
   generate the corresponding HTML files and open them in a browser.

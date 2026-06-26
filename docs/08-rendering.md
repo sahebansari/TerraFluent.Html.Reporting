@@ -38,7 +38,7 @@ asynchronous.
 
 ## `IHtmlReportRenderer`
 
-[`IHtmlReportRenderer`](../src/FluentHtmlReport/Rendering/IHtmlReportRenderer.cs)
+[`IHtmlReportRenderer`](../src/TerraFluent.Html.Reporting/Rendering/IHtmlReportRenderer.cs)
 is the renderer contract:
 
 ```csharp
@@ -51,7 +51,7 @@ public interface IHtmlReportRenderer
 }
 ```
 
-[`HtmlReportRenderer`](../src/FluentHtmlReport/Rendering/HtmlReportRenderer.cs)
+[`HtmlReportRenderer`](../src/TerraFluent.Html.Reporting/Rendering/HtmlReportRenderer.cs)
 (accessible as the shared, stateless `HtmlReportRenderer.Default`) is the
 only implementation shipped today. The `...To(TextWriter, ...)` overloads
 write one page at a time rather than building the whole document as a single
@@ -113,7 +113,7 @@ Key points:
   [Pagination and Layout § The output](07-pagination-and-layout.md#the-output-layoutresult))
   and calls `IReportElement.RenderHtml`.
 - **All CSS pixel values use the invariant culture** (`123.45px`, never
-  `123,45px`) - see [`CssFormat`](../src/FluentHtmlReport/Rendering/CssFormat.cs) -
+  `123,45px`) - see [`CssFormat`](../src/TerraFluent.Html.Reporting/Rendering/CssFormat.cs) -
   so generated reports are correct regardless of the server's locale.
 - **All user-supplied text is HTML-encoded** before being written (again via
   `CssFormat.Encode`, i.e. `WebUtility.HtmlEncode`) - the one exception is

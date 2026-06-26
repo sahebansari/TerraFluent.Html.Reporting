@@ -1,6 +1,6 @@
 # Pagination and Layout
 
-This page explains how [`LayoutEngine.Paginate`](../src/FluentHtmlReport/Layout/LayoutEngine.cs)
+This page explains how [`LayoutEngine.Paginate`](../src/TerraFluent.Html.Reporting/Layout/LayoutEngine.cs)
 turns a `ReportDocument`'s flat list of content elements into a sequence of
 pages - useful if you want to understand exactly why a page breaks where it
 does, what a `LayoutWarning` means, or you're implementing a custom
@@ -12,7 +12,7 @@ does, what a `LayoutWarning` means, or you're implementing a custom
 it yourself to inspect the result before rendering:
 
 ```csharp
-using FluentHtmlReport.Layout;
+using TerraFluent.Html.Reporting.Layout;
 
 LayoutResult layout = LayoutEngine.Paginate(document);
 Console.WriteLine($"{layout.Pages.Count} page(s)");
@@ -25,7 +25,7 @@ foreach (var warning in layout.Warnings)
 ## The `IReportElement` contract
 
 Every content, header, and footer element implements
-[`IReportElement`](../src/FluentHtmlReport/Model/IReportElement.cs):
+[`IReportElement`](../src/TerraFluent.Html.Reporting/Model/IReportElement.cs):
 
 ```csharp
 public interface IReportElement
@@ -69,7 +69,7 @@ invisible to callers.)
 
 ## `LayoutContext`
 
-[`LayoutContext`](../src/FluentHtmlReport/Layout/LayoutContext.cs) is the
+[`LayoutContext`](../src/TerraFluent.Html.Reporting/Layout/LayoutContext.cs) is the
 ambient information threaded through every `Measure`/`Split` call: the
 `ITextMeasurer` to use, and the `ContentWidthPx` available to the element.
 Elements that nest children at a narrower width (a table cell, a row column)
@@ -79,7 +79,7 @@ safely reused across sibling elements.
 
 ## `SplitResult`
 
-[`SplitResult`](../src/FluentHtmlReport/Layout/SplitResult.cs) is the return
+[`SplitResult`](../src/TerraFluent.Html.Reporting/Layout/SplitResult.cs) is the return
 type of `Split`:
 
 - **`SplitResult.Partial(head, tail)`** - the element was divided: `head`
@@ -124,7 +124,7 @@ full behavior, which is configurable per table via `TableStyle.RowSplitBehavior`
 
 ## `LayoutWarning`: when content doesn't fit
 
-A [`LayoutWarning`](../src/FluentHtmlReport/Layout/LayoutWarning.cs) is
+A [`LayoutWarning`](../src/TerraFluent.Html.Reporting/Layout/LayoutWarning.cs) is
 recorded only when an element couldn't be split (or split usefully) and
 didn't fit even on a completely empty page - the engine places it anyway
 (so it overflows visually) rather than silently dropping content or looping
@@ -175,14 +175,14 @@ never produce a blank page. See
 
 ## The output: `LayoutResult`
 
-[`LayoutResult`](../src/FluentHtmlReport/Layout/LayoutResult.cs) is plain
+[`LayoutResult`](../src/TerraFluent.Html.Reporting/Layout/LayoutResult.cs) is plain
 data describing the paginated document - no HTML anywhere in it:
 
-- **`Pages`** - an ordered list of [`PageLayout`](../src/FluentHtmlReport/Layout/PageLayout.cs),
+- **`Pages`** - an ordered list of [`PageLayout`](../src/TerraFluent.Html.Reporting/Layout/PageLayout.cs),
   each holding its `HeaderElements`/`ContentElements`/`FooterElements` as
-  [`PlacedElement`](../src/FluentHtmlReport/Layout/PlacedElement.cs)s (an
+  [`PlacedElement`](../src/TerraFluent.Html.Reporting/Layout/PlacedElement.cs)s (an
   element instance - possibly a `Split`-produced fragment, not the original -
-  paired with an [`ElementPlacement`](../src/FluentHtmlReport/Layout/ElementPlacement.cs)
+  paired with an [`ElementPlacement`](../src/TerraFluent.Html.Reporting/Layout/ElementPlacement.cs)
   describing where).
 - **`PageSize`**/**`Margins`** - copied from the document, already
   orientation-adjusted, so a renderer doesn't need the original document to

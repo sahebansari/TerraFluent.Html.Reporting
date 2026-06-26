@@ -12,7 +12,7 @@ callback passed to `RowBuilder.AddColumn(...)` (see
 Content, headers/footers, and row columns are configured by three distinct
 builder types, and they intentionally don't expose the same methods:
 
-| Method | [`ContentBuilder`](../src/FluentHtmlReport/Fluent/ContentBuilder.cs) (Content) | [`PageSectionBuilder`](../src/FluentHtmlReport/Fluent/PageSectionBuilder.cs) (Header/Footer) | [`RowColumnBuilder`](../src/FluentHtmlReport/Fluent/RowColumnBuilder.cs) (row column) |
+| Method | [`ContentBuilder`](../src/TerraFluent.Html.Reporting/Fluent/ContentBuilder.cs) (Content) | [`PageSectionBuilder`](../src/TerraFluent.Html.Reporting/Fluent/PageSectionBuilder.cs) (Header/Footer) | [`RowColumnBuilder`](../src/TerraFluent.Html.Reporting/Fluent/RowColumnBuilder.cs) (row column) |
 |---|---|---|---|
 | Plain text line | `AddParagraph` | `AddText` | `AddText` |
 | Heading | `AddHeading` | - | `AddHeading` |
@@ -51,7 +51,7 @@ c.AddParagraph("This report summarizes sales activity for the period.");
 [Styling](04-styling.md) for every chainable modifier (`.Bold()`,
 `.AlignCenter()`, `.FontSize(...)`, `.Margin(...)`, `.Padding(...)`, ...).
 
-Model type: [`Paragraph`](../src/FluentHtmlReport/Model/Elements/Paragraph.cs).
+Model type: [`Paragraph`](../src/TerraFluent.Html.Reporting/Model/Elements/Paragraph.cs).
 
 ## Heading
 
@@ -68,7 +68,7 @@ Each `HeadingLevel` has a default font size/weight/bottom-margin (see
 explicit `TextStyle` as the third argument to override it. `AddHeading`
 returns a `TextElementBuilder`, same as `AddParagraph`.
 
-Model type: [`Heading`](../src/FluentHtmlReport/Model/Elements/Heading.cs).
+Model type: [`Heading`](../src/TerraFluent.Html.Reporting/Model/Elements/Heading.cs).
 
 ## Image
 
@@ -86,7 +86,7 @@ c.AddImageFromBase64(dataUriOrBase64, widthPx: 120);  // from base64 (Content on
 - **If only one is given**, the other is derived from the image's intrinsic
   pixel dimensions (sniffed from the file's own header bytes - PNG, GIF, BMP,
   and baseline/progressive JPEG are supported; see
-  [`ImageDimensionReader`](../src/FluentHtmlReport/Model/Elements/ImageDimensionReader.cs))
+  [`ImageDimensionReader`](../src/TerraFluent.Html.Reporting/Model/Elements/ImageDimensionReader.cs))
   so the aspect ratio is preserved.
 - **If neither is given**, the intrinsic dimensions are used directly.
 - If the format isn't recognized and neither dimension was supplied, loading
@@ -97,7 +97,7 @@ c.AddImageFromBase64(dataUriOrBase64, widthPx: 120);  // from base64 (Content on
 container wider than itself, and `.Margin(...)`/`.Padding(...)` work the same
 as on text elements. See [Styling § Images](04-styling.md#images).
 
-Model type: [`ReportImage`](../src/FluentHtmlReport/Model/Elements/ReportImage.cs).
+Model type: [`ReportImage`](../src/TerraFluent.Html.Reporting/Model/Elements/ReportImage.cs).
 
 ## Table
 
@@ -117,7 +117,7 @@ Tables are involved enough to warrant their own page - see
 [Tables](05-tables.md) for column width resolution, `TableStyle`, per-cell
 style overrides, and `RowSplitBehavior`.
 
-Model type: [`Table`](../src/FluentHtmlReport/Model/Elements/Table.cs).
+Model type: [`Table`](../src/TerraFluent.Html.Reporting/Model/Elements/Table.cs).
 
 ## List
 
@@ -139,7 +139,7 @@ c.AddList(ListStyle.Numbered, new[]
 chainable modifiers today - pass `textStyle` directly for font/color
 control).
 
-Model type: [`ReportList`](../src/FluentHtmlReport/Model/Elements/ReportList.cs).
+Model type: [`ReportList`](../src/TerraFluent.Html.Reporting/Model/Elements/ReportList.cs).
 
 ## Row
 
@@ -157,8 +157,8 @@ c.AddRow(row =>
 
 Rows are covered in depth in [Rows and Columns](06-rows-and-columns.md).
 
-Model type: [`Row`](../src/FluentHtmlReport/Model/Elements/Row.cs) /
-[`RowColumn`](../src/FluentHtmlReport/Model/Elements/RowColumn.cs).
+Model type: [`Row`](../src/TerraFluent.Html.Reporting/Model/Elements/Row.cs) /
+[`RowColumn`](../src/TerraFluent.Html.Reporting/Model/Elements/RowColumn.cs).
 
 ## Horizontal rule
 
@@ -171,7 +171,7 @@ c.AddRule(thicknessPx: 3, color: "#2f4858");
 
 Has fixed default margins (8px top and bottom) baked into the model type
 rather than the fluent call - there's no chainable modifier for a rule today;
-construct [`HorizontalRule`](../src/FluentHtmlReport/Model/Elements/HorizontalRule.cs)
+construct [`HorizontalRule`](../src/TerraFluent.Html.Reporting/Model/Elements/HorizontalRule.cs)
 directly and add it via a lower-level path if you need different margins.
 
 ## Spacer
@@ -184,7 +184,7 @@ c.AddSpacer(20); // 20px of blank vertical space
 ```
 
 Throws `ArgumentOutOfRangeException` for a negative height. Model type:
-[`Spacer`](../src/FluentHtmlReport/Model/Elements/Spacer.cs).
+[`Spacer`](../src/TerraFluent.Html.Reporting/Model/Elements/Spacer.cs).
 
 ## Page break
 
@@ -205,7 +205,7 @@ c.AddHeading("Chapter 2", HeadingLevel.H1);
 
 Content-only (no header/footer/row-column equivalent - a page break inside a
 fixed-height repeated section wouldn't mean anything). Model type:
-[`PageBreak`](../src/FluentHtmlReport/Model/Elements/PageBreak.cs).
+[`PageBreak`](../src/TerraFluent.Html.Reporting/Model/Elements/PageBreak.cs).
 
 ## Raw HTML
 
@@ -226,7 +226,7 @@ c.AddRawHtml(
 The HTML is emitted **verbatim, with no encoding** - unlike text elements
 (which HTML-encode their content automatically), this is your one place to
 inject markup, so don't pass it unsanitized end-user input. Content-only.
-Model type: [`RawHtml`](../src/FluentHtmlReport/Model/Elements/RawHtml.cs).
+Model type: [`RawHtml`](../src/TerraFluent.Html.Reporting/Model/Elements/RawHtml.cs).
 
 ## Page number text
 
@@ -242,7 +242,7 @@ Only available via `AddPageNumber` on a header/footer/row-column builder (not
 directly in `Content`, since the main content area isn't a fixed, once-per-page
 position). Returns a `TextElementBuilder`, same modifiers as `AddParagraph`.
 
-Model type: [`PageNumberText`](../src/FluentHtmlReport/Model/Elements/PageNumberText.cs).
+Model type: [`PageNumberText`](../src/TerraFluent.Html.Reporting/Model/Elements/PageNumberText.cs).
 
 ## Where to go next
 

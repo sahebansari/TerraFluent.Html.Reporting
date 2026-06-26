@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
+    <RootNamespace>TerraFluent.Html.Reporting</RootNamespace>
+    <AssemblyName>TerraFluent.Html.Reporting</AssemblyName>
+    <PackageId>TerraFluent.Html.Reporting</PackageId>
+    <Description>A fluent, zero-dependency .NET library for generating paginated, print-ready HTML reports.</Description>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <!-- Trimming/Native AOT are only meaningful on modern TFMs; the library does
+       no reflection beyond Type.GetType().Name in a diagnostic message, so it
+       is safe to advertise compatibility here. -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.300" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>
