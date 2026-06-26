@@ -1,0 +1,10 @@
+## .NET
+bin/
+obj/
+*.user
+.vs/
+
+## Packaging output
+artifacts/
+*.nupkg
+*.snupkg
