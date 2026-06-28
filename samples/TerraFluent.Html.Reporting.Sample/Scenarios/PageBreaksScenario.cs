@@ -9,6 +9,8 @@ internal sealed class PageBreaksScenario : ISampleScenario
 {
     public string FileName => "06-page-breaks.html";
 
+    public string Title => "Page Breaks";
+
     public string Description => "AddPageBreak() forces each chapter to start on a fresh page regardless of remaining space.";
 
     public ReportDocument Build() =>

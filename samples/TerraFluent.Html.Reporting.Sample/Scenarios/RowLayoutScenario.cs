@@ -9,6 +9,8 @@ internal sealed class RowLayoutScenario : ISampleScenario
 {
     public string FileName => "11-row-layout.html";
 
+    public string Title => "Row Layout";
+
     public string Description => "AddRow lays out columns side by side - fixed vs auto widths, vertical alignment, and multi-element columns.";
 
     public ReportDocument Build() =>

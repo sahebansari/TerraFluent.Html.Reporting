@@ -8,6 +8,8 @@ internal sealed class TextStylingScenario : ISampleScenario
 {
     public string FileName => "02-text-styling.html";
 
+    public string Title => "Text Styling";
+
     public string Description => "Heading levels H1-H6, bold/italic/color/font/size modifiers, and text alignment.";
 
     private const string Sentence =

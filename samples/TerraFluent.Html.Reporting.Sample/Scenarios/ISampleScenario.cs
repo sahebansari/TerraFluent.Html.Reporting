@@ -8,6 +8,9 @@ internal interface ISampleScenario
     /// <summary>The output HTML file name, without a directory.</summary>
     string FileName { get; }
 
+    /// <summary>A short display title, used in the sample index page.</summary>
+    string Title { get; }
+
     /// <summary>A one-line description of what this sample demonstrates, printed to the console.</summary>
     string Description { get; }
 

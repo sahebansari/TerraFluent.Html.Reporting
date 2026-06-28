@@ -9,6 +9,8 @@ internal sealed class SalesInvoiceScenario : ISampleScenario
 {
     public string FileName => "10-sales-invoice.html";
 
+    public string Title => "Sales Invoice";
+
     public string Description => "A single-page sales invoice with the company logo in both the header and footer.";
 
     public ReportDocument Build()

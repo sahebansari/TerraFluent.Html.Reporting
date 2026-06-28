@@ -8,6 +8,8 @@ internal sealed class ListsScenario : ISampleScenario
 {
     public string FileName => "05-lists.html";
 
+    public string Title => "Lists";
+
     public string Description => "Bulleted list, and a numbered list long enough to span pages with numbering intact.";
 
     public ReportDocument Build() =>

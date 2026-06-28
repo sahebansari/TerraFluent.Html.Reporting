@@ -1,4 +1,5 @@
 using TerraFluent.Html.Reporting.Layout;
+using TerraFluent.Html.Reporting.Sample;
 using TerraFluent.Html.Reporting.Sample.Scenarios;
 
 ISampleScenario[] scenarios =
@@ -35,5 +36,9 @@ foreach (var scenario in scenarios)
     await document.RenderHtmlDocumentAsync(path);
 }
 
+var indexPath = Path.Combine(outputDir, "index.html");
+await File.WriteAllTextAsync(indexPath, SampleIndexPage.Build(scenarios));
+
 Console.WriteLine();
 Console.WriteLine($"Wrote {scenarios.Length} sample reports to {outputDir}");
+Console.WriteLine($"Open {indexPath} to browse them.");

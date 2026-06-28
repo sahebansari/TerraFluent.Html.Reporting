@@ -8,6 +8,8 @@ internal sealed class LandscapeCertificateScenario : ISampleScenario
 {
     public string FileName => "07-landscape-certificate.html";
 
+    public string Title => "Landscape Certificate";
+
     public string Description => "PageSize.Letter rotated to landscape via PageOrientation, for a certificate-style layout.";
 
     public ReportDocument Build() =>

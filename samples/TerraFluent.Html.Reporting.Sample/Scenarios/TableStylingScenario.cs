@@ -9,6 +9,8 @@ internal sealed class TableStylingScenario : ISampleScenario
 {
     public string FileName => "04-table-styling.html";
 
+    public string Title => "Table Styling";
+
     public string Description => "Custom column widths, and AllowSplitWithContinuedHeader vs KeepRowIntact compared.";
 
     private const string LongNote =

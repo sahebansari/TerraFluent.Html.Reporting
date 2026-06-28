@@ -8,6 +8,8 @@ internal sealed class ImagesScenario : ISampleScenario
 {
     public string FileName => "03-images.html";
 
+    public string Title => "Images";
+
     public string Description => "Images from bytes/base64/file path, explicit dimensions vs aspect-ratio-derived sizing.";
 
     public ReportDocument Build() =>

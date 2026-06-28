@@ -14,6 +14,8 @@ internal sealed class WarningsAndAsyncScenario : ISampleScenario
 {
     public string FileName => "09-warnings-and-async.html";
 
+    public string Title => "Warnings & Async";
+
     public string Description => "An oversized, unsplittable image triggers a LayoutResult.Warnings entry instead of failing silently.";
 
     public ReportDocument Build()

@@ -8,6 +8,8 @@ internal sealed class RawHtmlScenario : ISampleScenario
 {
     public string FileName => "08-raw-html.html";
 
+    public string Title => "Raw HTML";
+
     public string Description => "AddRawHtml lets you inject arbitrary markup at a caller-supplied height.";
 
     public ReportDocument Build() =>

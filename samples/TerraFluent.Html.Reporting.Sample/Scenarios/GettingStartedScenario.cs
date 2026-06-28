@@ -12,6 +12,8 @@ internal sealed class GettingStartedScenario : ISampleScenario
 {
     public string FileName => "01-getting-started.html";
 
+    public string Title => "Getting Started";
+
     public string Description => "Header/footer page numbers, heading, paragraph, image, multi-page table, numbered list.";
 
     public ReportDocument Build()
