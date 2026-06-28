@@ -1,4 +1,5 @@
 using TerraFluent.Html.Reporting.Layout;
+using TerraFluent.Html.Reporting.Measurement;
 using TerraFluent.Html.Reporting.Model;
 using TerraFluent.Html.Reporting.Model.Elements;
 using TerraFluent.Html.Reporting.Model.Styling;
@@ -98,6 +99,53 @@ public class TableTests
     }
 
     [Fact]
+    public void Split_AllowSplitWithContinuedHeader_PreservesCellLineBoundaries()
+    {
+        var table = new Table(
+            new TableColumn[] { "Col" },
+            new[] { new TableRow(new TableCell[] { "A\nB\nC\nD" }) },
+            NoPaddingStyle(RowSplitBehavior.AllowSplitWithContinuedHeader));
+
+        // Header (20) + three of the row's four lines (60) = 80.
+        var split = table.Split(80, Context());
+
+        var head = Assert.IsType<Table>(split.Head);
+        var tail = Assert.IsType<Table>(split.Tail);
+        Assert.Equal("A\nB\nC", head.Rows[0].Cells[0].Text);
+        Assert.Equal("D", tail.Rows[0].Cells[0].Text);
+        Assert.Equal(80, head.Measure(Context()).HeightPx);
+    }
+
+    [Fact]
+    public void Split_MixedCellLineHeights_HeadNeverExceedsAvailableHeight()
+    {
+        var small = TextStyle.Default.With(fontSizePx: 10, lineHeightMultiplier: 1, marginBottomPx: 0);
+        var large = TextStyle.Default.With(fontSizePx: 30, lineHeightMultiplier: 1, marginBottomPx: 0);
+        var lines = string.Join("|", Enumerable.Range(1, 10));
+        var style = TableStyle.Default.With(
+            headerTextStyle: small,
+            cellTextStyle: small,
+            cellPaddingPx: 0,
+            borderWidthPx: 2,
+            rowSplitBehavior: RowSplitBehavior.AllowSplitWithContinuedHeader);
+        var table = new Table(
+            new TableColumn[] { "Small", "Large" },
+            new[] { new TableRow(new[] { new TableCell(lines, small), new TableCell(lines, large) }) },
+            style);
+        var context = new LayoutContext(new FontSizedLineMeasurer(), 200);
+
+        // 14px header + 62px remaining (60px text + 2px row border): two
+        // 30px lines fit, never six 10px lines (which would make the
+        // large-font cell 180px tall).
+        var split = table.Split(76, context);
+
+        var head = Assert.IsType<Table>(split.Head);
+        Assert.True(head.Measure(context).HeightPx <= 76);
+        Assert.Equal("1\n2", head.Rows[0].Cells[0].Text);
+        Assert.Equal("1\n2", head.Rows[0].Cells[1].Text);
+    }
+
+    [Fact]
     public void Split_NoRoomForEvenTheHeader_IsUnsplittable()
     {
         var table = new Table(
@@ -138,5 +186,14 @@ public class TableTests
         Assert.Contains("Row 0", ex.Message);
         Assert.Contains("2 cell", ex.Message);
         Assert.Contains("3 column", ex.Message);
+    }
+
+    private sealed class FontSizedLineMeasurer : ITextMeasurer
+    {
+        public TextMeasurement Measure(string text, FontSpecification font, double maxWidthPx)
+        {
+            var lines = text.Replace("\r\n", "\n").Split(new[] { '\n', '|' });
+            return new TextMeasurement(lines, font.FontSizePx * font.LineHeightMultiplier, 0);
+        }
     }
 }

@@ -1,3 +1,5 @@
+using TerraFluent.Html.Reporting.Compatibility;
+
 namespace TerraFluent.Html.Reporting.Measurement;
 
 /// <summary>
@@ -32,13 +34,11 @@ public readonly struct FontSpecification : IEquatable<FontSpecification>
     public FontSpecification(string fontFamily, double fontSizePx, bool bold = false, bool italic = false, double lineHeightMultiplier = 1.2)
     {
         if (string.IsNullOrWhiteSpace(fontFamily)) throw new ArgumentException("Font family must be provided.", nameof(fontFamily));
-        if (fontSizePx <= 0) throw new ArgumentOutOfRangeException(nameof(fontSizePx));
-        if (lineHeightMultiplier <= 0) throw new ArgumentOutOfRangeException(nameof(lineHeightMultiplier));
         FontFamily = fontFamily;
-        FontSizePx = fontSizePx;
+        FontSizePx = Guard.Positive(fontSizePx, nameof(fontSizePx));
         Bold = bold;
         Italic = italic;
-        LineHeightMultiplier = lineHeightMultiplier;
+        LineHeightMultiplier = Guard.Positive(lineHeightMultiplier, nameof(lineHeightMultiplier));
     }
 
     /// <inheritdoc />

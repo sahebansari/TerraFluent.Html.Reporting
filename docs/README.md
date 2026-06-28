@@ -34,6 +34,7 @@ If you're new to the library, read these in order:
 | **[Cookbook](10-cookbook.md)** | You want a working recipe to copy - invoices, certificates, multi-page tables, raw HTML, async rendering, and more. |
 | **[Extending the Library](11-extending.md)** | You want to plug in a custom text measurer, a custom renderer, or a brand-new element type. |
 | **[FAQ / Troubleshooting](12-faq-troubleshooting.md)** | Something isn't behaving the way you expected. |
+| **[Release Checklist](13-release-checklist.md)** | You're preparing, validating, or publishing a NuGet release. |
 
 ## Conventions used throughout
 

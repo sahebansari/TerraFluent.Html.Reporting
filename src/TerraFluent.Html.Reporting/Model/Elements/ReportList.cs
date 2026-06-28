@@ -1,4 +1,5 @@
 using TerraFluent.Html.Reporting.Layout;
+using TerraFluent.Html.Reporting.Compatibility;
 using TerraFluent.Html.Reporting.Model.Styling;
 using TerraFluent.Html.Reporting.Rendering;
 
@@ -7,6 +8,10 @@ namespace TerraFluent.Html.Reporting.Model.Elements;
 /// <summary>A bulleted or numbered list. Splits at item boundaries (an individual item's wrapped lines are never separated).</summary>
 public sealed class ReportList : IReportElement
 {
+    private double _itemSpacingPx = 4;
+    private double _indentPx = 24;
+    private int _startIndex;
+
     /// <summary>Bulleted or numbered.</summary>
     public ListStyle Style { get; }
 
@@ -17,10 +22,18 @@ public sealed class ReportList : IReportElement
     public TextStyle TextStyle { get; }
 
     /// <summary>Vertical gap between items, in pixels.</summary>
-    public double ItemSpacingPx { get; init; } = 4;
+    public double ItemSpacingPx
+    {
+        get => _itemSpacingPx;
+        init => _itemSpacingPx = Guard.NonNegative(value, nameof(ItemSpacingPx));
+    }
 
     /// <summary>Horizontal indent reserved for the bullet/number marker, in pixels.</summary>
-    public double IndentPx { get; init; } = 24;
+    public double IndentPx
+    {
+        get => _indentPx;
+        init => _indentPx = Guard.NonNegative(value, nameof(IndentPx));
+    }
 
     /// <summary>
     /// The ordinal (0-based) of <see cref="Items"/>[0] within the original,
@@ -28,13 +41,17 @@ public sealed class ReportList : IReportElement
     /// forward so numbered-list markers keep counting correctly across a page
     /// break instead of restarting at 1.
     /// </summary>
-    public int StartIndex { get; init; }
+    public int StartIndex
+    {
+        get => _startIndex;
+        init => _startIndex = value < 0 ? throw new ArgumentOutOfRangeException(nameof(StartIndex)) : value;
+    }
 
     /// <summary>Creates a list.</summary>
     public ReportList(ListStyle style, IReadOnlyList<string> items, TextStyle? textStyle = null)
     {
         Style = style;
-        Items = items ?? throw new ArgumentNullException(nameof(items));
+        Items = Guard.Snapshot(items, nameof(items));
         TextStyle = textStyle ?? Styling.TextStyle.Default.With(marginBottomPx: 0);
     }
 
@@ -109,12 +126,12 @@ public sealed class ReportList : IReportElement
         sb.Append('<').Append(tag).Append(startAttribute)
           .Append(" style=\"margin:0;padding-left:").Append(CssFormat.Px(IndentPx))
           .Append(";list-style-type:").Append(listStyleType)
-          .Append(";font-family:").Append(TextStyle.FontFamily)
+          .Append(";font-family:").Append(CssFormat.Attribute(TextStyle.FontFamily))
           .Append(";font-size:").Append(CssFormat.Px(TextStyle.FontSizePx))
           .Append(";font-weight:").Append(CssFormat.FontWeightCss(TextStyle.FontWeight))
           .Append(";font-style:").Append(CssFormat.FontStyleCss(TextStyle.FontStyle))
           .Append(";line-height:").Append(CssFormat.Number(TextStyle.LineHeightMultiplier))
-          .Append(";color:").Append(TextStyle.Color).Append(";\">");
+          .Append(";color:").Append(CssFormat.Attribute(TextStyle.Color)).Append(";\">");
 
         foreach (var item in Items)
         {

@@ -5,7 +5,15 @@ same kind of fixed-page layout you get from a PDF report generator (TerraPDF, iT
 QuestPDF), but outputting HTML/CSS so the result opens in any browser and
 prints (or "Print to PDF") with correct page breaks.
 
+## Installation
+
+```shell
+dotnet add package TerraFluent.Html.Reporting --version 0.2.0-alpha.1
+```
+
 ```csharp
+using TerraFluent.Html.Reporting.Model;
+
 var report = ReportDocument.Create(PageSize.A4, PageOrientation.Portrait)
     .SetMargins(40, 40, 60, 60)
     .Header(h => h.AddText("Monthly Sales Report").AlignCenter().Bold())
@@ -42,6 +50,7 @@ Full documentation lives in [docs/](docs/README.md):
 - [Cookbook](docs/10-cookbook.md)
 - [Extending the Library](docs/11-extending.md)
 - [FAQ / Troubleshooting](docs/12-faq-troubleshooting.md)
+- [Release Checklist](docs/13-release-checklist.md)
 
 The [samples/TerraFluent.Html.Reporting.Sample](samples/TerraFluent.Html.Reporting.Sample) project
 is a runnable companion to the docs - run it to generate eleven example

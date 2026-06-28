@@ -1,3 +1,5 @@
+using TerraFluent.Html.Reporting.Compatibility;
+
 namespace TerraFluent.Html.Reporting.Layout;
 
 /// <summary>
@@ -13,7 +15,6 @@ public readonly struct ElementMeasurement
     /// <summary>Creates an element measurement.</summary>
     public ElementMeasurement(double heightPx)
     {
-        if (heightPx < 0) throw new ArgumentOutOfRangeException(nameof(heightPx));
-        HeightPx = heightPx;
+        HeightPx = Guard.NonNegative(heightPx, nameof(heightPx));
     }
 }

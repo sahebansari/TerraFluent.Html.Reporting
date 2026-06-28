@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using TerraFluent.Html.Reporting.Fluent;
+using TerraFluent.Html.Reporting.Compatibility;
 using TerraFluent.Html.Reporting.Layout;
 using TerraFluent.Html.Reporting.Measurement;
 using TerraFluent.Html.Reporting.Model.Sections;
@@ -51,7 +52,7 @@ public sealed class ReportDocument
         Margins = margins;
         Header = header;
         Footer = footer;
-        ContentElements = contentElements ?? throw new ArgumentNullException(nameof(contentElements));
+        ContentElements = Guard.Snapshot(contentElements, nameof(contentElements));
         TextMeasurer = textMeasurer ?? throw new ArgumentNullException(nameof(textMeasurer));
     }
 

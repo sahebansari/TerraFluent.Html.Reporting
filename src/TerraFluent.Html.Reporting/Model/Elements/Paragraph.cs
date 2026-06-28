@@ -71,8 +71,11 @@ public sealed class Paragraph : IReportElement
         // the trailing margin/padding; symmetrically the tail is not the true
         // start, so it must not repeat the leading margin/padding either - only
         // an unsplit paragraph (or the head/tail at the actual edge) keeps both.
-        var head = new Paragraph(string.Join(" ", measured.Lines.Take(lineBudget)), Style.With(marginBottomPx: 0, paddingBottomPx: 0));
-        var tail = new Paragraph(string.Join(" ", measured.Lines.Skip(lineBudget)), Style.With(marginTopPx: 0, paddingTopPx: 0));
+        // Preserve the measurer's line boundaries as explicit line breaks.
+        // Joining with spaces loses caller-supplied newlines and can also make
+        // a fragment re-wrap differently when LayoutEngine measures it again.
+        var head = new Paragraph(string.Join("\n", measured.Lines.Take(lineBudget)), Style.With(marginBottomPx: 0, paddingBottomPx: 0));
+        var tail = new Paragraph(string.Join("\n", measured.Lines.Skip(lineBudget)), Style.With(marginTopPx: 0, paddingTopPx: 0));
         return SplitResult.Partial(head, tail);
     }
 
@@ -88,9 +91,9 @@ public sealed class Paragraph : IReportElement
             "left:" + CssFormat.Px(left) + ";top:" + CssFormat.Px(top) +
             ";width:" + CssFormat.Px(width) + ";height:" + CssFormat.Px(height) +
             ";padding:" + CssFormat.Box(Style.PaddingTopPx, Style.PaddingRightPx, Style.PaddingBottomPx, Style.PaddingLeftPx) +
-            ";font-family:" + Style.FontFamily + ";font-size:" + CssFormat.Px(Style.FontSizePx) +
+            ";font-family:" + CssFormat.Attribute(Style.FontFamily) + ";font-size:" + CssFormat.Px(Style.FontSizePx) +
             ";font-weight:" + CssFormat.FontWeightCss(Style.FontWeight) + ";font-style:" + CssFormat.FontStyleCss(Style.FontStyle) +
-            ";color:" + Style.Color + ";line-height:" + CssFormat.Number(Style.LineHeightMultiplier) +
+            ";color:" + CssFormat.Attribute(Style.Color) + ";line-height:" + CssFormat.Number(Style.LineHeightMultiplier) +
             ";text-align:" + CssFormat.TextAlign(Style.Alignment) + ";white-space:pre-wrap;\">" +
             CssFormat.Encode(Text) + "</p>";
     }

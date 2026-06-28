@@ -1,8 +1,15 @@
+using TerraFluent.Html.Reporting.Compatibility;
+
 namespace TerraFluent.Html.Reporting.Model.Elements;
 
 /// <summary>One column of a <see cref="Row"/>: a list of elements stacked vertically, given a share of the row's width.</summary>
 public sealed class RowColumn
 {
+    private double _paddingTopPx;
+    private double _paddingRightPx;
+    private double _paddingBottomPx;
+    private double _paddingLeftPx;
+
     /// <summary>
     /// A fixed width in pixels, or <see langword="null"/> to share the width
     /// remaining after fixed-width columns (and column gaps) equally among the
@@ -14,23 +21,38 @@ public sealed class RowColumn
     public IReadOnlyList<IReportElement> Elements { get; }
 
     /// <summary>Inset, in pixels, between the column's box edge and its elements, on each side.</summary>
-    public double PaddingTopPx { get; init; } = 0;
+    public double PaddingTopPx
+    {
+        get => _paddingTopPx;
+        init => _paddingTopPx = Guard.NonNegative(value, nameof(PaddingTopPx));
+    }
 
     /// <summary>See <see cref="PaddingTopPx"/>.</summary>
-    public double PaddingRightPx { get; init; } = 0;
+    public double PaddingRightPx
+    {
+        get => _paddingRightPx;
+        init => _paddingRightPx = Guard.NonNegative(value, nameof(PaddingRightPx));
+    }
 
     /// <summary>See <see cref="PaddingTopPx"/>.</summary>
-    public double PaddingBottomPx { get; init; } = 0;
+    public double PaddingBottomPx
+    {
+        get => _paddingBottomPx;
+        init => _paddingBottomPx = Guard.NonNegative(value, nameof(PaddingBottomPx));
+    }
 
     /// <summary>See <see cref="PaddingTopPx"/>.</summary>
-    public double PaddingLeftPx { get; init; } = 0;
+    public double PaddingLeftPx
+    {
+        get => _paddingLeftPx;
+        init => _paddingLeftPx = Guard.NonNegative(value, nameof(PaddingLeftPx));
+    }
 
     /// <summary>Creates a row column.</summary>
     public RowColumn(IReadOnlyList<IReportElement> elements, double? widthPx = null)
     {
-        Elements = elements ?? throw new ArgumentNullException(nameof(elements));
-        if (widthPx is < 0) throw new ArgumentOutOfRangeException(nameof(widthPx));
-        WidthPx = widthPx;
+        Elements = Guard.Snapshot(elements, nameof(elements));
+        WidthPx = Guard.NonNegative(widthPx, nameof(widthPx));
     }
 
     /// <summary>Returns a copy of this column with the given padding overridden, leaving its width and elements unchanged.</summary>

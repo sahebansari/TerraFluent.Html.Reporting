@@ -1,5 +1,6 @@
 using TerraFluent.Html.Reporting.Layout;
 using TerraFluent.Html.Reporting.Rendering;
+using TerraFluent.Html.Reporting.Compatibility;
 
 namespace TerraFluent.Html.Reporting.Model.Elements;
 
@@ -12,8 +13,7 @@ public sealed class Spacer : IReportElement
     /// <summary>Creates a spacer of the given height.</summary>
     public Spacer(double heightPx)
     {
-        if (heightPx < 0) throw new ArgumentOutOfRangeException(nameof(heightPx));
-        HeightPx = heightPx;
+        HeightPx = Guard.NonNegative(heightPx, nameof(heightPx));
     }
 
     /// <inheritdoc />

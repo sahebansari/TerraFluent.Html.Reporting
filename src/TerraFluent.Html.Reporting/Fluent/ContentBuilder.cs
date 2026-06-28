@@ -11,6 +11,17 @@ public sealed class ContentBuilder
 
     internal IReadOnlyList<IReportElement> Elements => _elements;
 
+    /// <summary>
+    /// Adds a custom report element. Use this with an <see cref="IReportElement"/>
+    /// implementation when the built-in element methods do not cover the
+    /// required content.
+    /// </summary>
+    public ContentBuilder AddElement(IReportElement element)
+    {
+        _elements.Add(element ?? throw new ArgumentNullException(nameof(element)));
+        return this;
+    }
+
     /// <summary>Adds a heading (H1-H6).</summary>
     public TextElementBuilder AddHeading(string text, HeadingLevel level, TextStyle? style = null)
     {

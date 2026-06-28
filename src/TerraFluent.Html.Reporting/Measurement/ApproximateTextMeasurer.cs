@@ -1,4 +1,5 @@
 using System.Text;
+using TerraFluent.Html.Reporting.Compatibility;
 
 namespace TerraFluent.Html.Reporting.Measurement;
 
@@ -25,7 +26,7 @@ public sealed class ApproximateTextMeasurer : ITextMeasurer
     /// <inheritdoc />
     public TextMeasurement Measure(string text, FontSpecification font, double maxWidthPx)
     {
-        if (maxWidthPx <= 0) throw new ArgumentOutOfRangeException(nameof(maxWidthPx));
+        Guard.Positive(maxWidthPx, nameof(maxWidthPx));
         var lineHeightPx = font.FontSizePx * font.LineHeightMultiplier;
 
         if (string.IsNullOrEmpty(text))

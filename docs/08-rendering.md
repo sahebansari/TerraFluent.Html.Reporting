@@ -120,9 +120,10 @@ Key points:
   `RawHtml`, which is emitted verbatim by design (see
   [Content Elements § Raw HTML](03-content-elements.md#raw-html)).
 
-`RenderFragmentTo` emits the same `<style>` block and page `<div>`s without
-the `<html>`/`<head>`/`<body>` wrapper, for embedding inside a page you
-already control.
+`RenderFragmentTo` emits the page styles and page `<div>`s without the
+`<html>`/`<head>`/`<body>` wrapper. Its stylesheet omits the document-level
+`html`/`body` reset and background rules, so embedding a report does not
+change the host page's margins, background, or font.
 
 ## Printing to PDF
 

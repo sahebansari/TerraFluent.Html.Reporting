@@ -157,7 +157,8 @@ public class ReportImageTests
 
         Assert.Equal(50, styled.WidthPx);
         Assert.Equal(20, styled.HeightPx);
-        Assert.Same(image.ImageBytes, styled.ImageBytes);
+        Assert.Equal(image.ImageBytes, styled.ImageBytes);
+        Assert.NotSame(image.ImageBytes, styled.ImageBytes);
         Assert.Equal(1, styled.MarginTopPx);
         Assert.Equal(2, styled.PaddingLeftPx);
         Assert.Equal(TextAlignment.Center, styled.Alignment);

@@ -6,7 +6,7 @@ TerraFluent.Html.Reporting targets both `netstandard2.0` and `net10.0` and has z
 third-party dependencies. Add the package to your project:
 
 ```
-dotnet add package TerraFluent.Html.Reporting
+dotnet add package TerraFluent.Html.Reporting --version 0.2.0-alpha.1
 ```
 
 ## The four-step pipeline

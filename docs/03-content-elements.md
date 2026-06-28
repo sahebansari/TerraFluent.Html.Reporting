@@ -26,6 +26,7 @@ builder types, and they intentionally don't expose the same methods:
 | Page break | `AddPageBreak` | - | - |
 | Spacer | `AddSpacer` | - | `AddSpacer` |
 | Raw HTML | `AddRawHtml` | - | - |
+| Custom `IReportElement` | `AddElement` | - | - |
 
 Rationale: a header/footer is a small, fixed-height, repeated block - it has
 no use for a page break or a multi-page table, and `AddText` (unlike

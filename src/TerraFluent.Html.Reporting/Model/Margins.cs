@@ -1,3 +1,5 @@
+using TerraFluent.Html.Reporting.Compatibility;
+
 namespace TerraFluent.Html.Reporting.Model;
 
 /// <summary>
@@ -22,14 +24,10 @@ public readonly struct Margins : IEquatable<Margins>
     /// <summary>Creates margins with an independent value per edge.</summary>
     public Margins(double top, double right, double bottom, double left)
     {
-        if (top < 0) throw new ArgumentOutOfRangeException(nameof(top));
-        if (right < 0) throw new ArgumentOutOfRangeException(nameof(right));
-        if (bottom < 0) throw new ArgumentOutOfRangeException(nameof(bottom));
-        if (left < 0) throw new ArgumentOutOfRangeException(nameof(left));
-        Top = top;
-        Right = right;
-        Bottom = bottom;
-        Left = left;
+        Top = Guard.NonNegative(top, nameof(top));
+        Right = Guard.NonNegative(right, nameof(right));
+        Bottom = Guard.NonNegative(bottom, nameof(bottom));
+        Left = Guard.NonNegative(left, nameof(left));
     }
 
     /// <summary>Creates uniform margins applied to all four edges.</summary>

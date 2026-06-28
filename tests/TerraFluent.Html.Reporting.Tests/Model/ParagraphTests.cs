@@ -37,8 +37,8 @@ public class ParagraphTests
 
         var head = Assert.IsType<Paragraph>(split.Head);
         var tail = Assert.IsType<Paragraph>(split.Tail);
-        Assert.Equal(3, head.Text.Split(' ').Length);
-        Assert.Equal(2, tail.Text.Split(' ').Length);
+        Assert.Equal(3, head.Text.Split('\n').Length);
+        Assert.Equal(2, tail.Text.Split('\n').Length);
     }
 
     [Fact]
@@ -53,8 +53,8 @@ public class ParagraphTests
 
         var head = Assert.IsType<Paragraph>(split.Head);
         var tail = Assert.IsType<Paragraph>(split.Tail);
-        Assert.Equal(2, head.Text.Split(' ').Length);
-        Assert.Single(tail.Text.Split(' '));
+        Assert.Equal(2, head.Text.Split('\n').Length);
+        Assert.Single(tail.Text.Split('\n'));
     }
 
     [Fact]
@@ -110,5 +110,20 @@ public class ParagraphTests
         Assert.Equal(10, head.Style.MarginTopPx);
         Assert.Equal(0, tail.Style.MarginTopPx);
         Assert.Equal(10, tail.Style.MarginBottomPx);
+    }
+
+    [Fact]
+    public void Split_PreservesMeasuredLineBoundariesAndExplicitNewlines()
+    {
+        var paragraph = new Paragraph("A\nB\nC\nD\nE", TextStyle.Default.With(marginBottomPx: 0));
+
+        var split = paragraph.Split(60, Context());
+
+        var head = Assert.IsType<Paragraph>(split.Head);
+        var tail = Assert.IsType<Paragraph>(split.Tail);
+        Assert.Equal("A\nB\nC", head.Text);
+        Assert.Equal("D\nE", tail.Text);
+        Assert.Equal(60, head.Measure(Context()).HeightPx);
+        Assert.Equal(40, tail.Measure(Context()).HeightPx);
     }
 }

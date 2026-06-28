@@ -1,4 +1,5 @@
 using System.Text;
+using TerraFluent.Html.Reporting.Compatibility;
 using TerraFluent.Html.Reporting.Layout;
 using TerraFluent.Html.Reporting.Rendering;
 
@@ -13,6 +14,11 @@ namespace TerraFluent.Html.Reporting.Model.Elements;
 /// </summary>
 public sealed class Row : IReportElement
 {
+    private double _marginTopPx;
+    private double _marginRightPx;
+    private double _marginBottomPx = 8;
+    private double _marginLeftPx;
+
     /// <summary>The row's columns, in left-to-right order.</summary>
     public IReadOnlyList<RowColumn> Columns { get; }
 
@@ -23,16 +29,32 @@ public sealed class Row : IReportElement
     public RowVerticalAlignment VerticalAlignment { get; }
 
     /// <summary>Space above the row, in pixels.</summary>
-    public double MarginTopPx { get; init; } = 0;
+    public double MarginTopPx
+    {
+        get => _marginTopPx;
+        init => _marginTopPx = Guard.NonNegative(value, nameof(MarginTopPx));
+    }
 
     /// <summary>Space to the right of the row, in pixels - shrinks the columns' available width from the right edge of the container.</summary>
-    public double MarginRightPx { get; init; } = 0;
+    public double MarginRightPx
+    {
+        get => _marginRightPx;
+        init => _marginRightPx = Guard.NonNegative(value, nameof(MarginRightPx));
+    }
 
     /// <summary>Space below the row, in pixels.</summary>
-    public double MarginBottomPx { get; init; } = 8;
+    public double MarginBottomPx
+    {
+        get => _marginBottomPx;
+        init => _marginBottomPx = Guard.NonNegative(value, nameof(MarginBottomPx));
+    }
 
     /// <summary>Space to the left of the row, in pixels - shrinks the columns' available width from the left edge of the container and shifts them right.</summary>
-    public double MarginLeftPx { get; init; } = 0;
+    public double MarginLeftPx
+    {
+        get => _marginLeftPx;
+        init => _marginLeftPx = Guard.NonNegative(value, nameof(MarginLeftPx));
+    }
 
     // Populated by Measure and reused by RenderHtml, which has no LayoutContext
     // (and so cannot measure text itself) - safe because the layout engine
@@ -47,10 +69,9 @@ public sealed class Row : IReportElement
     /// <summary>Creates a row.</summary>
     public Row(IReadOnlyList<RowColumn> columns, double columnGapPx = 12, RowVerticalAlignment verticalAlignment = RowVerticalAlignment.Middle)
     {
-        Columns = columns ?? throw new ArgumentNullException(nameof(columns));
+        Columns = Guard.Snapshot(columns, nameof(columns));
         if (Columns.Count == 0) throw new ArgumentException("A row must have at least one column.", nameof(columns));
-        if (columnGapPx < 0) throw new ArgumentOutOfRangeException(nameof(columnGapPx));
-        ColumnGapPx = columnGapPx;
+        ColumnGapPx = Guard.NonNegative(columnGapPx, nameof(columnGapPx));
         VerticalAlignment = verticalAlignment;
     }
 

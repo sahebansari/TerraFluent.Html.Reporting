@@ -1,5 +1,6 @@
 using TerraFluent.Html.Reporting.Layout;
 using TerraFluent.Html.Reporting.Rendering;
+using TerraFluent.Html.Reporting.Compatibility;
 
 namespace TerraFluent.Html.Reporting.Model.Elements;
 
@@ -11,8 +12,18 @@ namespace TerraFluent.Html.Reporting.Model.Elements;
 /// </summary>
 public sealed class ReportImage : IReportElement
 {
+    private readonly byte[] _imageBytes;
+    private double _marginTopPx;
+    private double _marginRightPx;
+    private double _marginBottomPx = 8;
+    private double _marginLeftPx;
+    private double _paddingTopPx;
+    private double _paddingRightPx;
+    private double _paddingBottomPx;
+    private double _paddingLeftPx;
+
     /// <summary>The raw image bytes, embedded inline as a base64 data URI when rendered.</summary>
-    public byte[] ImageBytes { get; }
+    public byte[] ImageBytes => (byte[])_imageBytes.Clone();
 
     /// <summary>The MIME type used for the data URI, e.g. "image/png".</summary>
     public string MimeType { get; }
@@ -24,28 +35,60 @@ public sealed class ReportImage : IReportElement
     public double HeightPx { get; }
 
     /// <summary>Space above the image, in pixels.</summary>
-    public double MarginTopPx { get; init; } = 0;
+    public double MarginTopPx
+    {
+        get => _marginTopPx;
+        init => _marginTopPx = Guard.NonNegative(value, nameof(MarginTopPx));
+    }
 
     /// <summary>Space to the right of the image, in pixels - shrinks its box from the right edge of its container.</summary>
-    public double MarginRightPx { get; init; } = 0;
+    public double MarginRightPx
+    {
+        get => _marginRightPx;
+        init => _marginRightPx = Guard.NonNegative(value, nameof(MarginRightPx));
+    }
 
     /// <summary>Space below the image, in pixels.</summary>
-    public double MarginBottomPx { get; init; } = 8;
+    public double MarginBottomPx
+    {
+        get => _marginBottomPx;
+        init => _marginBottomPx = Guard.NonNegative(value, nameof(MarginBottomPx));
+    }
 
     /// <summary>Space to the left of the image, in pixels - shrinks its box from the left edge of its container and shifts it right.</summary>
-    public double MarginLeftPx { get; init; } = 0;
+    public double MarginLeftPx
+    {
+        get => _marginLeftPx;
+        init => _marginLeftPx = Guard.NonNegative(value, nameof(MarginLeftPx));
+    }
 
     /// <summary>Inset, in pixels, between the image's box edge and the image itself, on each side.</summary>
-    public double PaddingTopPx { get; init; } = 0;
+    public double PaddingTopPx
+    {
+        get => _paddingTopPx;
+        init => _paddingTopPx = Guard.NonNegative(value, nameof(PaddingTopPx));
+    }
 
     /// <summary>See <see cref="PaddingTopPx"/>.</summary>
-    public double PaddingRightPx { get; init; } = 0;
+    public double PaddingRightPx
+    {
+        get => _paddingRightPx;
+        init => _paddingRightPx = Guard.NonNegative(value, nameof(PaddingRightPx));
+    }
 
     /// <summary>See <see cref="PaddingTopPx"/>.</summary>
-    public double PaddingBottomPx { get; init; } = 0;
+    public double PaddingBottomPx
+    {
+        get => _paddingBottomPx;
+        init => _paddingBottomPx = Guard.NonNegative(value, nameof(PaddingBottomPx));
+    }
 
     /// <summary>See <see cref="PaddingTopPx"/>.</summary>
-    public double PaddingLeftPx { get; init; } = 0;
+    public double PaddingLeftPx
+    {
+        get => _paddingLeftPx;
+        init => _paddingLeftPx = Guard.NonNegative(value, nameof(PaddingLeftPx));
+    }
 
     /// <summary>
     /// Horizontal position of the image within its container when narrower
@@ -56,10 +99,12 @@ public sealed class ReportImage : IReportElement
 
     private ReportImage(byte[] imageBytes, string mimeType, double widthPx, double heightPx)
     {
-        ImageBytes = imageBytes;
-        MimeType = mimeType;
-        WidthPx = widthPx;
-        HeightPx = heightPx;
+        _imageBytes = (byte[])imageBytes.Clone();
+        MimeType = string.IsNullOrWhiteSpace(mimeType)
+            ? throw new ArgumentException("MIME type must be provided.", nameof(mimeType))
+            : mimeType;
+        WidthPx = Guard.Positive(widthPx, nameof(widthPx));
+        HeightPx = Guard.Positive(heightPx, nameof(heightPx));
     }
 
     /// <summary>Loads an image from a local file path.</summary>
@@ -78,6 +123,7 @@ public sealed class ReportImage : IReportElement
     /// <summary>Loads an image from a base64 string, optionally prefixed with a <c>data:</c> URI header.</summary>
     public static ReportImage FromBase64(string base64OrDataUri, string mimeType = "image/png", double? widthPx = null, double? heightPx = null)
     {
+        if (base64OrDataUri is null) throw new ArgumentNullException(nameof(base64OrDataUri));
         var commaIndex = base64OrDataUri.IndexOf(',');
         var payload = base64OrDataUri.StartsWith("data:", StringComparison.OrdinalIgnoreCase) && commaIndex >= 0
             ? base64OrDataUri.Substring(commaIndex + 1)
@@ -118,7 +164,7 @@ public sealed class ReportImage : IReportElement
         double? paddingRightPx = null,
         double? paddingBottomPx = null,
         double? paddingLeftPx = null,
-        TextAlignment? alignment = null) => new ReportImage(ImageBytes, MimeType, WidthPx, HeightPx)
+        TextAlignment? alignment = null) => new ReportImage(_imageBytes, MimeType, WidthPx, HeightPx)
     {
         MarginTopPx = marginTopPx ?? MarginTopPx,
         MarginRightPx = marginRightPx ?? MarginRightPx,
@@ -166,6 +212,6 @@ public sealed class ReportImage : IReportElement
         return "<img style=\"position:absolute;" +
             "left:" + CssFormat.Px(left) + ";top:" + CssFormat.Px(top) +
             ";width:" + CssFormat.Px(WidthPx) + ";height:" + CssFormat.Px(HeightPx) + ";\" " +
-            "src=\"data:" + MimeType + ";base64," + Convert.ToBase64String(ImageBytes) + "\" alt=\"\" />";
+            "src=\"data:" + CssFormat.Attribute(MimeType) + ";base64," + Convert.ToBase64String(_imageBytes) + "\" alt=\"\" />";
     }
 }

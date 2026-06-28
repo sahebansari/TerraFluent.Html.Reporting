@@ -1,4 +1,5 @@
 using System.Text;
+using TerraFluent.Html.Reporting.Compatibility;
 using TerraFluent.Html.Reporting.Layout;
 using TerraFluent.Html.Reporting.Measurement;
 using TerraFluent.Html.Reporting.Model.Styling;
@@ -54,8 +55,8 @@ public sealed class Table : IReportElement
         double[]? precomputedRowHeights,
         double precomputedForContentWidthPx)
     {
-        Columns = columns ?? throw new ArgumentNullException(nameof(columns));
-        Rows = rows ?? throw new ArgumentNullException(nameof(rows));
+        Columns = Guard.Snapshot(columns, nameof(columns));
+        Rows = Guard.Snapshot(rows, nameof(rows));
         Style = style ?? TableStyle.Default;
         IsContinuation = isContinuation;
 
@@ -274,21 +275,26 @@ public sealed class Table : IReportElement
         head = null!;
         tail = null!;
 
-        var usableForText = remainingHeightPx - 2 * Style.CellPaddingPx;
+        // MeasureRowHeight includes the row's border line as well as its
+        // padding, so reserve all of them before budgeting text lines.
+        var usableForText = remainingHeightPx - 2 * Style.CellPaddingPx - Style.BorderWidthPx;
         if (usableForText <= 0) return false;
 
         var measurements = new TextMeasurement[row.Cells.Count];
-        var minLineHeight = double.MaxValue;
+        var maxLineHeight = 0.0;
         for (var c = 0; c < row.Cells.Count; c++)
         {
             var cell = row.Cells[c];
             var style = cell.Style ?? Style.CellTextStyle;
             var width = Math.Max(1, widths[c] - 2 * Style.CellPaddingPx);
             measurements[c] = context.TextMeasurer.Measure(cell.Text, style.ToFontSpecification(), width);
-            if (measurements[c].LineHeightPx < minLineHeight) minLineHeight = measurements[c].LineHeightPx;
+            if (measurements[c].LineHeightPx > maxLineHeight) maxLineHeight = measurements[c].LineHeightPx;
         }
 
-        var lineBudget = (int)Math.Floor(usableForText / minLineHeight);
+        // A shared line budget keeps cells aligned, but it must be based on
+        // the tallest line. Using the shortest line allowed a large-font cell
+        // to render a head fragment taller than the space offered to Split.
+        var lineBudget = (int)Math.Floor(usableForText / maxLineHeight);
         if (lineBudget <= 0) return false;
 
         var headCells = new List<TableCell>();
@@ -307,8 +313,8 @@ public sealed class Table : IReportElement
                 continue;
             }
 
-            headCells.Add(new TableCell(string.Join(" ", lines.Take(lineBudget)), style));
-            tailCells.Add(new TableCell(string.Join(" ", lines.Skip(lineBudget)), style));
+            headCells.Add(new TableCell(string.Join("\n", lines.Take(lineBudget)), style));
+            tailCells.Add(new TableCell(string.Join("\n", lines.Skip(lineBudget)), style));
             splitSomething = true;
         }
 
@@ -348,9 +354,9 @@ public sealed class Table : IReportElement
         if (IsContinuation && Style.ContinuedHeaderSuffix.Trim().Length > 0)
         {
             sb.Append("<tr><td colspan=\"").Append(Columns.Count).Append("\" style=\"background-color:")
-              .Append(Style.HeaderBackgroundColor).Append(";color:").Append(Style.HeaderTextStyle.Color)
+              .Append(CssFormat.Attribute(Style.HeaderBackgroundColor)).Append(";color:").Append(CssFormat.Attribute(Style.HeaderTextStyle.Color))
               .Append(";font-style:italic;padding:").Append(CssFormat.Px(Style.CellPaddingPx))
-              .Append(";border:").Append(CssFormat.Px(Style.BorderWidthPx)).Append(" solid ").Append(Style.BorderColor)
+              .Append(";border:").Append(CssFormat.Px(Style.BorderWidthPx)).Append(" solid ").Append(CssFormat.Attribute(Style.BorderColor))
               .Append(";\">").Append(CssFormat.Encode(Style.ContinuedHeaderSuffix.Trim())).Append("</td></tr>");
         }
 
@@ -381,16 +387,16 @@ public sealed class Table : IReportElement
     private void AppendCell(StringBuilder sb, string tag, string text, TextStyle? cellStyleOverride, TextStyle defaultStyle, string backgroundColor)
     {
         var style = cellStyleOverride ?? defaultStyle;
-        sb.Append('<').Append(tag).Append(" style=\"background-color:").Append(backgroundColor)
-          .Append(";color:").Append(style.Color)
-          .Append(";font-family:").Append(style.FontFamily)
+        sb.Append('<').Append(tag).Append(" style=\"background-color:").Append(CssFormat.Attribute(backgroundColor))
+          .Append(";color:").Append(CssFormat.Attribute(style.Color))
+          .Append(";font-family:").Append(CssFormat.Attribute(style.FontFamily))
           .Append(";font-size:").Append(CssFormat.Px(style.FontSizePx))
           .Append(";font-weight:").Append(CssFormat.FontWeightCss(style.FontWeight))
           .Append(";font-style:").Append(CssFormat.FontStyleCss(style.FontStyle))
           .Append(";line-height:").Append(CssFormat.Number(style.LineHeightMultiplier))
           .Append(";text-align:").Append(CssFormat.TextAlign(style.Alignment))
           .Append(";padding:").Append(CssFormat.Px(Style.CellPaddingPx))
-          .Append(";border:").Append(CssFormat.Px(Style.BorderWidthPx)).Append(" solid ").Append(Style.BorderColor)
+          .Append(";border:").Append(CssFormat.Px(Style.BorderWidthPx)).Append(" solid ").Append(CssFormat.Attribute(Style.BorderColor))
           .Append(";white-space:pre-wrap;\">").Append(CssFormat.Encode(text)).Append("</").Append(tag).Append('>');
     }
 }

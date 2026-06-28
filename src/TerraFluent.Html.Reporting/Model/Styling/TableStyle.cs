@@ -1,3 +1,5 @@
+using TerraFluent.Html.Reporting.Compatibility;
+
 namespace TerraFluent.Html.Reporting.Model.Styling;
 
 /// <summary>
@@ -6,6 +8,9 @@ namespace TerraFluent.Html.Reporting.Model.Styling;
 /// </summary>
 public sealed class TableStyle
 {
+    private double _cellPaddingPx = 6;
+    private double _borderWidthPx = 1;
+
     /// <summary>The default style used when a table does not specify one.</summary>
     public static TableStyle Default { get; } = new();
 
@@ -29,13 +34,21 @@ public sealed class TableStyle
     public bool StripedRows { get; init; } = true;
 
     /// <summary>Cell padding, in pixels, applied on all four sides of every cell.</summary>
-    public double CellPaddingPx { get; init; } = 6;
+    public double CellPaddingPx
+    {
+        get => _cellPaddingPx;
+        init => _cellPaddingPx = Guard.NonNegative(value, nameof(CellPaddingPx));
+    }
 
     /// <summary>Border color between cells/rows; null/empty means no visible border.</summary>
     public string BorderColor { get; init; } = "#d8dde0";
 
     /// <summary>Border thickness in pixels.</summary>
-    public double BorderWidthPx { get; init; } = 1;
+    public double BorderWidthPx
+    {
+        get => _borderWidthPx;
+        init => _borderWidthPx = Guard.NonNegative(value, nameof(BorderWidthPx));
+    }
 
     /// <summary>How the table behaves when a row would otherwise be cut across a page boundary.</summary>
     public RowSplitBehavior RowSplitBehavior { get; init; } = RowSplitBehavior.AllowSplitWithContinuedHeader;

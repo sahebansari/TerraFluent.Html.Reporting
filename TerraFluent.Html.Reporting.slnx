@@ -6,6 +6,7 @@
     <Project Path="src/TerraFluent.Html.Reporting/TerraFluent.Html.Reporting.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/TerraFluent.Html.Reporting.BrowserTests/TerraFluent.Html.Reporting.BrowserTests.csproj" />
     <Project Path="tests/TerraFluent.Html.Reporting.Tests/TerraFluent.Html.Reporting.Tests.csproj" />
   </Folder>
 </Solution>

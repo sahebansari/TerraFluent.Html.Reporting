@@ -39,7 +39,7 @@ public sealed class HtmlReportRenderer : IHtmlReportRenderer
     public void RenderDocumentTo(TextWriter writer, LayoutResult layout, CancellationToken cancellationToken = default)
     {
         writer.Write("<!DOCTYPE html><html><head><meta charset=\"utf-8\" /><title>Report</title><style>");
-        writer.Write(BuildStyles(layout));
+        writer.Write(BuildStyles(layout, includeDocumentChrome: true));
         writer.Write("</style></head><body>");
         RenderPages(writer, layout, cancellationToken);
         writer.Write("</body></html>");
@@ -49,26 +49,30 @@ public sealed class HtmlReportRenderer : IHtmlReportRenderer
     public void RenderFragmentTo(TextWriter writer, LayoutResult layout, CancellationToken cancellationToken = default)
     {
         writer.Write("<style>");
-        writer.Write(BuildStyles(layout));
+        writer.Write(BuildStyles(layout, includeDocumentChrome: false));
         writer.Write("</style>");
         RenderPages(writer, layout, cancellationToken);
     }
 
-    private static string BuildStyles(LayoutResult layout)
+    private static string BuildStyles(LayoutResult layout, bool includeDocumentChrome)
     {
         var width = CssFormat.Number(layout.PageSize.WidthPx);
         var height = CssFormat.Number(layout.PageSize.HeightPx);
 
+        var documentChrome = includeDocumentChrome
+            ? "html, body { margin: 0; padding: 0; } body { background: #e8e8e8; font-family: Segoe UI, Arial, sans-serif; } "
+            : string.Empty;
+        var printBody = includeDocumentChrome ? "body { background: none; } " : string.Empty;
+
         return
             "@page { size: " + width + "px " + height + "px; margin: 0; } " +
-            "html, body { margin: 0; padding: 0; } " +
-            "body { background: #e8e8e8; font-family: Segoe UI, Arial, sans-serif; } " +
+            documentChrome +
             ".fhr-page { position: relative; width: " + CssFormat.Px(layout.PageSize.WidthPx) +
                 "; height: " + CssFormat.Px(layout.PageSize.HeightPx) +
                 "; background: #ffffff; overflow: hidden; margin: 0 auto 16px auto; " +
                 "box-shadow: 0 0 6px rgba(0,0,0,0.25); page-break-after: always; break-after: page; } " +
             ".fhr-page:last-child { page-break-after: auto; break-after: auto; margin-bottom: 0; } " +
-            "@media print { body { background: none; } .fhr-page { margin: 0; box-shadow: none; } }";
+            "@media print { " + printBody + ".fhr-page { margin: 0; box-shadow: none; } }";
     }
 
     private static void RenderPages(TextWriter writer, LayoutResult layout, CancellationToken cancellationToken)

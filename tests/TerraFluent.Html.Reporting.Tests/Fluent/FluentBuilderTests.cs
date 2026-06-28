@@ -1,6 +1,9 @@
+using TerraFluent.Html.Reporting.Fluent;
+using TerraFluent.Html.Reporting.Layout;
 using TerraFluent.Html.Reporting.Model;
 using TerraFluent.Html.Reporting.Model.Elements;
 using TerraFluent.Html.Reporting.Model.Styling;
+using TerraFluent.Html.Reporting.Rendering;
 using Xunit;
 
 namespace TerraFluent.Html.Reporting.Tests.Fluent;
@@ -64,6 +67,24 @@ public class FluentBuilderTests
             e => Assert.IsType<Paragraph>(e),
             e => Assert.IsType<HorizontalRule>(e),
             e => Assert.IsType<Spacer>(e));
+    }
+
+    [Fact]
+    public void AddElement_AddsCustomReportElementToContent()
+    {
+        var customElement = new StubReportElement();
+
+        var document = ReportDocument.Create(PageSize.A4)
+            .Content(c => c.AddElement(customElement))
+            .Build();
+
+        Assert.Same(customElement, Assert.Single(document.ContentElements));
+    }
+
+    [Fact]
+    public void AddElement_NullElement_Throws()
+    {
+        Assert.Throws<ArgumentNullException>(() => new ContentBuilder().AddElement(null!));
     }
 
     [Fact]
@@ -171,5 +192,15 @@ public class FluentBuilderTests
         Assert.Equal(20, document.Margins.Right);
         Assert.Equal(30, document.Margins.Bottom);
         Assert.Equal(40, document.Margins.Left);
+    }
+
+    private sealed class StubReportElement : IReportElement
+    {
+        public ElementMeasurement Measure(LayoutContext context) => new(1);
+
+        public SplitResult Split(double availableHeightPx, LayoutContext context) =>
+            SplitResult.Unsplittable(this);
+
+        public string RenderHtml(ElementPlacement placement, RenderContext context) => string.Empty;
     }
 }

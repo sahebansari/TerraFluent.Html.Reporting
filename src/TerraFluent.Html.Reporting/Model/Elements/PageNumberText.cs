@@ -50,9 +50,9 @@ public sealed class PageNumberText : IReportElement
             "left:" + CssFormat.Px(left) + ";top:" + CssFormat.Px(top) +
             ";width:" + CssFormat.Px(width) + ";height:" + CssFormat.Px(height) +
             ";padding:" + CssFormat.Box(Style.PaddingTopPx, Style.PaddingRightPx, Style.PaddingBottomPx, Style.PaddingLeftPx) +
-            ";font-family:" + Style.FontFamily + ";font-size:" + CssFormat.Px(Style.FontSizePx) +
+            ";font-family:" + CssFormat.Attribute(Style.FontFamily) + ";font-size:" + CssFormat.Px(Style.FontSizePx) +
             ";font-weight:" + CssFormat.FontWeightCss(Style.FontWeight) + ";font-style:" + CssFormat.FontStyleCss(Style.FontStyle) +
-            ";color:" + Style.Color + ";line-height:" + CssFormat.Number(Style.LineHeightMultiplier) +
+            ";color:" + CssFormat.Attribute(Style.Color) + ";line-height:" + CssFormat.Number(Style.LineHeightMultiplier) +
             ";text-align:" + CssFormat.TextAlign(Style.Alignment) + ";white-space:pre-wrap;\">" +
             CssFormat.Encode(Resolve(FormatTemplate, context.PageNumber, context.TotalPages)) + "</p>";
     }

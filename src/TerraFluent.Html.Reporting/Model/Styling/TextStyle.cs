@@ -1,3 +1,5 @@
+using TerraFluent.Html.Reporting.Compatibility;
+
 namespace TerraFluent.Html.Reporting.Model.Styling;
 
 /// <summary>
@@ -6,6 +8,17 @@ namespace TerraFluent.Html.Reporting.Model.Styling;
 /// </summary>
 public sealed class TextStyle
 {
+    private double _fontSizePx = 14;
+    private double _lineHeightMultiplier = 1.4;
+    private double _marginTopPx;
+    private double _marginRightPx;
+    private double _marginBottomPx = 8;
+    private double _marginLeftPx;
+    private double _paddingTopPx;
+    private double _paddingRightPx;
+    private double _paddingBottomPx;
+    private double _paddingLeftPx;
+
     /// <summary>The default style used when an element does not specify one.</summary>
     public static TextStyle Default { get; } = new();
 
@@ -13,7 +26,11 @@ public sealed class TextStyle
     public string FontFamily { get; init; } = "Segoe UI, Arial, sans-serif";
 
     /// <summary>Font size in CSS pixels.</summary>
-    public double FontSizePx { get; init; } = 14;
+    public double FontSizePx
+    {
+        get => _fontSizePx;
+        init => _fontSizePx = Guard.Positive(value, nameof(FontSizePx));
+    }
 
     /// <summary>Font weight (normal/bold).</summary>
     public FontWeight FontWeight { get; init; } = FontWeight.Normal;
@@ -25,34 +42,70 @@ public sealed class TextStyle
     public string Color { get; init; } = "#222222";
 
     /// <summary>Line height as a multiple of <see cref="FontSizePx"/> (e.g. 1.4).</summary>
-    public double LineHeightMultiplier { get; init; } = 1.4;
+    public double LineHeightMultiplier
+    {
+        get => _lineHeightMultiplier;
+        init => _lineHeightMultiplier = Guard.Positive(value, nameof(LineHeightMultiplier));
+    }
 
     /// <summary>Horizontal alignment of the text within its containing block.</summary>
     public TextAlignment Alignment { get; init; } = TextAlignment.Left;
 
     /// <summary>Space, in pixels, above the element.</summary>
-    public double MarginTopPx { get; init; } = 0;
+    public double MarginTopPx
+    {
+        get => _marginTopPx;
+        init => _marginTopPx = Guard.NonNegative(value, nameof(MarginTopPx));
+    }
 
     /// <summary>Space, in pixels, to the right of the element - shrinks its box from the right edge of its container.</summary>
-    public double MarginRightPx { get; init; } = 0;
+    public double MarginRightPx
+    {
+        get => _marginRightPx;
+        init => _marginRightPx = Guard.NonNegative(value, nameof(MarginRightPx));
+    }
 
     /// <summary>Space, in pixels, below the element before the next one begins.</summary>
-    public double MarginBottomPx { get; init; } = 8;
+    public double MarginBottomPx
+    {
+        get => _marginBottomPx;
+        init => _marginBottomPx = Guard.NonNegative(value, nameof(MarginBottomPx));
+    }
 
     /// <summary>Space, in pixels, to the left of the element - shrinks its box from the left edge of its container and shifts it right.</summary>
-    public double MarginLeftPx { get; init; } = 0;
+    public double MarginLeftPx
+    {
+        get => _marginLeftPx;
+        init => _marginLeftPx = Guard.NonNegative(value, nameof(MarginLeftPx));
+    }
 
     /// <summary>Inset, in pixels, between the element's box edge and its text on each side. Text wraps within the space left over after padding (and margin) are subtracted from the container width.</summary>
-    public double PaddingTopPx { get; init; } = 0;
+    public double PaddingTopPx
+    {
+        get => _paddingTopPx;
+        init => _paddingTopPx = Guard.NonNegative(value, nameof(PaddingTopPx));
+    }
 
     /// <summary>See <see cref="PaddingTopPx"/>.</summary>
-    public double PaddingRightPx { get; init; } = 0;
+    public double PaddingRightPx
+    {
+        get => _paddingRightPx;
+        init => _paddingRightPx = Guard.NonNegative(value, nameof(PaddingRightPx));
+    }
 
     /// <summary>See <see cref="PaddingTopPx"/>.</summary>
-    public double PaddingBottomPx { get; init; } = 0;
+    public double PaddingBottomPx
+    {
+        get => _paddingBottomPx;
+        init => _paddingBottomPx = Guard.NonNegative(value, nameof(PaddingBottomPx));
+    }
 
     /// <summary>See <see cref="PaddingTopPx"/>.</summary>
-    public double PaddingLeftPx { get; init; } = 0;
+    public double PaddingLeftPx
+    {
+        get => _paddingLeftPx;
+        init => _paddingLeftPx = Guard.NonNegative(value, nameof(PaddingLeftPx));
+    }
 
     /// <summary>Resolved line height in pixels: <see cref="FontSizePx"/> * <see cref="LineHeightMultiplier"/>.</summary>
     public double LineHeightPx => FontSizePx * LineHeightMultiplier;

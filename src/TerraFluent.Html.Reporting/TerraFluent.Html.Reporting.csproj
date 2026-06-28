@@ -9,6 +9,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
   <!-- Trimming/Native AOT are only meaningful on modern TFMs; the library does

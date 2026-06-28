@@ -1,4 +1,5 @@
 using TerraFluent.Html.Reporting.Model;
+using TerraFluent.Html.Reporting.Compatibility;
 
 namespace TerraFluent.Html.Reporting.Layout;
 
@@ -27,9 +28,9 @@ public sealed class LayoutResult
     /// <summary>Creates a layout result.</summary>
     public LayoutResult(IReadOnlyList<PageLayout> pages, PageSize pageSize, Margins margins, IReadOnlyList<LayoutWarning>? warnings = null)
     {
-        Pages = pages ?? throw new ArgumentNullException(nameof(pages));
+        Pages = Guard.Snapshot(pages, nameof(pages));
         PageSize = pageSize;
         Margins = margins;
-        Warnings = warnings ?? Array.Empty<LayoutWarning>();
+        Warnings = warnings is null ? Array.Empty<LayoutWarning>() : Guard.Snapshot(warnings, nameof(warnings));
     }
 }

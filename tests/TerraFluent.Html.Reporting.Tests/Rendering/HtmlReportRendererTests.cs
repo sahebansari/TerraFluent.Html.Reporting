@@ -43,6 +43,9 @@ public class HtmlReportRendererTests
         Assert.DoesNotContain("<html", fragment);
         Assert.Contains("<style>", fragment);
         Assert.Contains("class=\"fhr-page\"", fragment);
+        Assert.DoesNotContain("html, body", fragment);
+        Assert.DoesNotContain("body {", fragment);
+        Assert.Contains(".fhr-page {", fragment);
     }
 
     [Fact]
@@ -58,6 +61,47 @@ public class HtmlReportRendererTests
 
         Assert.DoesNotContain("<script>", html);
         Assert.Contains("&lt;script&gt;", html);
+    }
+
+    [Fact]
+    public void RenderDocument_DynamicAttributeValues_CannotInjectHtmlAttributes()
+    {
+        const string maliciousFont = "Arial\" onmouseover=\"alert(1)";
+        const string maliciousColor = "red\" onfocus=\"alert(2)";
+        const string maliciousMimeType = "image/png\" onerror=\"alert(3)";
+        var style = TextStyle.Default.With(fontFamily: maliciousFont, color: maliciousColor);
+
+        var document = ReportDocument.Create(PageSize.FromPixels(400, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .Content(c =>
+            {
+                c.AddParagraph("Safe text", style);
+                c.AddHeading("Safe heading", HeadingLevel.H2, style);
+                c.AddList(ListStyle.Bulleted, new[] { "Safe item" }, style);
+                c.AddRule(color: maliciousColor);
+                c.AddTable(table =>
+                {
+                    table.AddColumns("Safe header");
+                    table.AddRow("Safe cell");
+                }, TableStyle.Default.With(
+                    headerTextStyle: style,
+                    cellTextStyle: style,
+                    headerBackgroundColor: maliciousColor,
+                    evenRowBackgroundColor: maliciousColor,
+                    borderColor: maliciousColor));
+                c.AddImage(new byte[] { 1 }, maliciousMimeType, widthPx: 10, heightPx: 10);
+            })
+            .Build();
+
+        var html = HtmlReportRenderer.Default.RenderDocument(Paginate(document));
+
+        Assert.DoesNotContain("\" onmouseover=\"", html);
+        Assert.DoesNotContain("\" onfocus=\"", html);
+        Assert.DoesNotContain("\" onerror=\"", html);
+        Assert.Contains("Arial&quot; onmouseover=&quot;alert(1)", html);
+        Assert.Contains("red&quot; onfocus=&quot;alert(2)", html);
+        Assert.Contains("image/png&quot; onerror=&quot;alert(3)", html);
     }
 
     [Fact]

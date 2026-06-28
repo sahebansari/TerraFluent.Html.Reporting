@@ -1,5 +1,6 @@
 using TerraFluent.Html.Reporting.Layout;
 using TerraFluent.Html.Reporting.Rendering;
+using TerraFluent.Html.Reporting.Compatibility;
 
 namespace TerraFluent.Html.Reporting.Model.Elements;
 
@@ -20,8 +21,7 @@ public sealed class RawHtml : IReportElement
     public RawHtml(string html, double heightPx)
     {
         Html = html ?? throw new ArgumentNullException(nameof(html));
-        if (heightPx < 0) throw new ArgumentOutOfRangeException(nameof(heightPx));
-        HeightPx = heightPx;
+        HeightPx = Guard.NonNegative(heightPx, nameof(heightPx));
     }
 
     /// <inheritdoc />

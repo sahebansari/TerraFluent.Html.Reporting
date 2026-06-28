@@ -26,6 +26,13 @@ internal static class CssFormat
     /// <summary>HTML-encodes text for safe inclusion in markup (also escapes user content to prevent injection).</summary>
     public static string Encode(string text) => WebUtility.HtmlEncode(text);
 
+    /// <summary>
+    /// HTML-encodes a dynamic value written inside a quoted HTML attribute.
+    /// This is required even for CSS values: quotes in a font/color value
+    /// must not be able to terminate the surrounding <c>style</c> attribute.
+    /// </summary>
+    public static string Attribute(string value) => WebUtility.HtmlEncode(value);
+
     /// <summary>Maps a <see cref="TextAlignment"/> to its CSS keyword.</summary>
     public static string TextAlign(TextAlignment alignment) => alignment switch
     {

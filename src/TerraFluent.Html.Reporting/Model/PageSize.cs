@@ -1,3 +1,5 @@
+using TerraFluent.Html.Reporting.Compatibility;
+
 namespace TerraFluent.Html.Reporting.Model;
 
 /// <summary>
@@ -19,10 +21,8 @@ public readonly struct PageSize : IEquatable<PageSize>
 
     private PageSize(double widthPx, double heightPx)
     {
-        if (widthPx <= 0) throw new ArgumentOutOfRangeException(nameof(widthPx));
-        if (heightPx <= 0) throw new ArgumentOutOfRangeException(nameof(heightPx));
-        WidthPx = widthPx;
-        HeightPx = heightPx;
+        WidthPx = Guard.Positive(widthPx, nameof(widthPx));
+        HeightPx = Guard.Positive(heightPx, nameof(heightPx));
     }
 
     /// <summary>ISO A4: 210mm x 297mm.</summary>

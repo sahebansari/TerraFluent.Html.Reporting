@@ -170,11 +170,9 @@ public sealed class Watermark : IReportElement
 ```
 
 ```csharp
-// No ContentBuilder.AddWatermark() exists - construct and add it via
-// whatever extension method or lower-level path your application defines.
-// (ContentBuilder.Elements is internal, so a real integration typically
-// adds a small extension method alongside ContentBuilder, or you assemble
-// IReportElement lists yourself outside the fluent builders entirely.)
+ReportDocument.Create(PageSize.A4)
+    .Content(c => c.AddElement(new Watermark("DRAFT", heightPx: 80)))
+    .Build();
 ```
 
 Re-read [Pagination and Layout § The `IReportElement` contract](07-pagination-and-layout.md#the-ireportelement-contract)

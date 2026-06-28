@@ -1,4 +1,5 @@
 using TerraFluent.Html.Reporting.Layout;
+using TerraFluent.Html.Reporting.Compatibility;
 
 namespace TerraFluent.Html.Reporting.Model.Sections;
 
@@ -15,7 +16,7 @@ public sealed class PageSection : IPageSection
     public PageSection(PageSectionKind kind, IReadOnlyList<IReportElement> elements)
     {
         Kind = kind;
-        Elements = elements ?? throw new ArgumentNullException(nameof(elements));
+        Elements = Guard.Snapshot(elements, nameof(elements));
     }
 
     /// <inheritdoc />

@@ -1,4 +1,5 @@
 using TerraFluent.Html.Reporting.Measurement;
+using TerraFluent.Html.Reporting.Compatibility;
 
 namespace TerraFluent.Html.Reporting.Layout;
 
@@ -22,8 +23,7 @@ public sealed class LayoutContext
     public LayoutContext(ITextMeasurer textMeasurer, double contentWidthPx)
     {
         TextMeasurer = textMeasurer ?? throw new ArgumentNullException(nameof(textMeasurer));
-        if (contentWidthPx <= 0) throw new ArgumentOutOfRangeException(nameof(contentWidthPx));
-        ContentWidthPx = contentWidthPx;
+        ContentWidthPx = Guard.Positive(contentWidthPx, nameof(contentWidthPx));
     }
 
     /// <summary>Returns a copy of this context narrowed/widened to <paramref name="contentWidthPx"/>.</summary>

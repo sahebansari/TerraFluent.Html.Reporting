@@ -1,3 +1,5 @@
+using TerraFluent.Html.Reporting.Compatibility;
+
 namespace TerraFluent.Html.Reporting.Measurement;
 
 /// <summary>
@@ -24,9 +26,8 @@ public sealed class TextMeasurement
     /// <summary>Creates a text measurement result.</summary>
     public TextMeasurement(IReadOnlyList<string> lines, double lineHeightPx, double widestLineWidthPx)
     {
-        Lines = lines ?? throw new ArgumentNullException(nameof(lines));
-        if (lineHeightPx <= 0) throw new ArgumentOutOfRangeException(nameof(lineHeightPx));
-        LineHeightPx = lineHeightPx;
-        WidestLineWidthPx = widestLineWidthPx;
+        Lines = Guard.Snapshot(lines, nameof(lines));
+        LineHeightPx = Guard.Positive(lineHeightPx, nameof(lineHeightPx));
+        WidestLineWidthPx = Guard.NonNegative(widestLineWidthPx, nameof(widestLineWidthPx));
     }
 }

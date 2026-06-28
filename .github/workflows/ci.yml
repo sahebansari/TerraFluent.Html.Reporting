@@ -32,6 +32,18 @@ jobs:
       - name: Test
         run: dotnet test --configuration Release --no-build --verbosity normal
 
+      - name: Restore browser tests
+        run: dotnet restore tests/TerraFluent.Html.Reporting.BrowserTests/TerraFluent.Html.Reporting.BrowserTests.csproj
+
+      - name: Build browser tests
+        run: dotnet build tests/TerraFluent.Html.Reporting.BrowserTests/TerraFluent.Html.Reporting.BrowserTests.csproj --configuration Release --no-restore
+
+      - name: Install browser engines
+        run: pwsh tests/TerraFluent.Html.Reporting.BrowserTests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium firefox webkit
+
+      - name: Test print layout in Chromium, Firefox, and WebKit
+        run: dotnet test tests/TerraFluent.Html.Reporting.BrowserTests/TerraFluent.Html.Reporting.BrowserTests.csproj --configuration Release --no-build --verbosity normal
+
       - name: Pack
         run: dotnet pack src/TerraFluent.Html.Reporting/TerraFluent.Html.Reporting.csproj --configuration Release --no-build --output artifacts
 
@@ -48,6 +60,9 @@ jobs:
     needs: build-test-pack
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Download package artifacts
@@ -69,5 +84,11 @@ jobs:
             exit 1
           fi
 
+      - name: NuGet login
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
       - name: Push to NuGet.org
-        run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

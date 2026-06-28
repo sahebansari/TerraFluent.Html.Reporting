@@ -74,7 +74,7 @@ public class LayoutEngineTests
         Assert.Equal(3, result.Pages.Count);
 
         var fragments = result.Pages
-            .Select(p => ((Paragraph)p.ContentElements.Single().Element).Text.Split(' '))
+            .Select(p => ((Paragraph)p.ContentElements.Single().Element).Text.Split('\n'))
             .ToList();
         Assert.Equal(new[] { 2, 2, 1 }, fragments.Select(f => f.Length));
         Assert.Equal(words, fragments.SelectMany(f => f));

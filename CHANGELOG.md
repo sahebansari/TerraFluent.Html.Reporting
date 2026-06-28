@@ -5,7 +5,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.2.0-alpha.1] - 2026-06-28
+
 ### Added
+- `ContentBuilder.AddElement(IReportElement)` makes the documented custom-element extension point usable through the fluent API.
 - `AddRow` on both `Header`/`Footer` builders and `Content`: lays out side-by-side columns (e.g. a logo next to a company name), each column stacking its own elements vertically. Supports fixed or auto-shared column widths, a configurable column gap, and top/middle/bottom vertical alignment (`RowVerticalAlignment`). Like an image, a row never splits across pages.
 - Margin, padding, and alignment fluent modifiers across the element API, every `Add*` method now returns a builder/handle you can chain them on:
   - `AddParagraph`/`AddHeading`/`AddText`/`AddPageNumber`: `TextElementBuilder` gained `MarginTop/Right/Bottom/Left`, `Margin(...)`, and `Padding(...)` (padding insets the wrapped text from its own box; existing `Alignment`/`MarginBottom` unchanged).
@@ -17,6 +20,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `TextStyle` gained `MarginTopPx`/`MarginRightPx`/`MarginLeftPx` and `PaddingTopPx/RightPx/BottomPx/LeftPx` (all default to `0`, so existing styles render unchanged). `ReportImage` and `Row` gained the equivalent margin properties; `RowColumn` gained padding properties.
 
 ### Fixed
+- Paragraph and split-table fragments preserve measured line boundaries instead of replacing them with spaces, so explicit newlines survive pagination and fragments re-measure consistently.
+- Table row splitting now budgets against the tallest cell line (and reserves the row border), preventing mixed-font-size rows from producing a head fragment taller than the available page space.
+- Dynamic CSS and image MIME values are HTML-attribute encoded, preventing quotes in those values from breaking out of generated `style`/`src` attributes.
+- `RenderFragment`/`RenderFragmentTo` no longer emit global `html`/`body` reset, background, or font rules that mutate the host page.
 - `ReportImage` rendered every image stretched to the full content width (only height respected the requested/derived size). The `<img>` tag now uses the image's own resolved width and height.
 - `Table` under-measured its own rendered height by the table's border width: `Measure`/`Split` summed cell text + padding per row but never accounted for `TableStyle.BorderWidthPx`, so the `overflow:hidden` container `RenderHtml` wraps the `<table>` in was sized slightly too short, silently clipping the last row's bottom border (and, on a split table, the continuation banner's). Row/header/banner heights now each include one border-line's worth of height, plus one extra for the table's outermost top edge.
 - `Table` also pinned its `<table>` to `width:100%`, which (verified in a real browser) left the fixed-table-layout algorithm zero leftover space to draw the table's own outer border, silently dropping the rightmost column's right border (and, less visibly, the leftmost column's left border) regardless of `BorderWidthPx`. The table now sizes itself from its `<colgroup>` widths (which already sum to the intended content width) instead, leaving room for both outer borders without changing any column's rendered position.

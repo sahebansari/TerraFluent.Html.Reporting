@@ -1,3 +1,5 @@
+using TerraFluent.Html.Reporting.Compatibility;
+
 namespace TerraFluent.Html.Reporting.Layout;
 
 /// <summary>One fully laid-out page: the placed header, content, and footer fragments it contains.</summary>
@@ -24,8 +26,8 @@ public sealed class PageLayout
     {
         if (pageIndex < 0) throw new ArgumentOutOfRangeException(nameof(pageIndex));
         PageIndex = pageIndex;
-        HeaderElements = headerElements ?? throw new ArgumentNullException(nameof(headerElements));
-        ContentElements = contentElements ?? throw new ArgumentNullException(nameof(contentElements));
-        FooterElements = footerElements ?? throw new ArgumentNullException(nameof(footerElements));
+        HeaderElements = Guard.Snapshot(headerElements, nameof(headerElements));
+        ContentElements = Guard.Snapshot(contentElements, nameof(contentElements));
+        FooterElements = Guard.Snapshot(footerElements, nameof(footerElements));
     }
 }

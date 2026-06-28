@@ -1,4 +1,5 @@
 using TerraFluent.Html.Reporting.Model;
+using TerraFluent.Html.Reporting.Compatibility;
 
 namespace TerraFluent.Html.Reporting.Layout;
 
@@ -30,10 +31,10 @@ public sealed class ElementPlacement
     /// <summary>Creates an element placement.</summary>
     public ElementPlacement(double xPx, double yPx, double widthPx, double heightPx, int pageIndex, PageSectionKind section)
     {
-        XPx = xPx;
-        YPx = yPx;
-        WidthPx = widthPx;
-        HeightPx = heightPx;
+        XPx = Guard.Finite(xPx, nameof(xPx));
+        YPx = Guard.Finite(yPx, nameof(yPx));
+        WidthPx = Guard.NonNegative(widthPx, nameof(widthPx));
+        HeightPx = Guard.NonNegative(heightPx, nameof(heightPx));
         if (pageIndex < 0) throw new ArgumentOutOfRangeException(nameof(pageIndex));
         PageIndex = pageIndex;
         Section = section;
