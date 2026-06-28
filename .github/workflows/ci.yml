@@ -29,8 +29,12 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
+      # Scoped to the unit test project: a solution-wide `dotnet test` would
+      # also pick up BrowserTests (now registered in the .slnx for local
+      # discoverability), whose Playwright browser binaries aren't installed
+      # until the dedicated steps below.
       - name: Test
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: dotnet test tests/TerraFluent.Html.Reporting.Tests/TerraFluent.Html.Reporting.Tests.csproj --configuration Release --no-build --verbosity normal
 
       - name: Restore browser tests
         run: dotnet restore tests/TerraFluent.Html.Reporting.BrowserTests/TerraFluent.Html.Reporting.BrowserTests.csproj
