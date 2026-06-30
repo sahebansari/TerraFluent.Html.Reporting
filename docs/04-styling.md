@@ -54,7 +54,7 @@ c.AddParagraph("Note")
 
 Each call rebuilds the element with an updated `TextStyle` and replaces it in
 the owning content/section list - see
-[Core Concepts § The rebuild-and-replace pattern](02-core-concepts.md#the-rebuild-and-replace-pattern)
+[Core Concepts: The rebuild-and-replace pattern](02-core-concepts.md#the-rebuild-and-replace-pattern)
 for why this is safe to chain repeatedly. Because each call only overrides
 what you pass, calling the same modifier twice just has the later value win
 (no accumulation).
@@ -157,7 +157,7 @@ how column width and vertical alignment interact with these.
 
 `TableStyle` (header/cell text styles, striping, borders, cell padding, and
 `RowSplitBehavior`) is its own topic - see
-[Tables § `TableStyle`](05-tables.md#tablestyle).
+[Tables: `TableStyle`](05-tables.md#tablestyle).
 
 ## Colors and fonts: a caveat
 

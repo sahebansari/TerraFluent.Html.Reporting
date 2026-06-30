@@ -1,6 +1,6 @@
 # Core Concepts
 
-## The pipeline: model → layout → render
+## The pipeline: model -> layout -> render
 
 TerraFluent.Html.Reporting is built as three distinct stages, each in its own
 namespace, connected only by simple data:
@@ -119,9 +119,8 @@ ems, or percentages anywhere.
 - `PageSize.FromPixels(...)` skips the conversion entirely.
 - The renderer emits these pixel values directly into inline CSS
   (`left:123.45px`, `@page { size: 794px 1123px; }`), so what the layout
-  engine measured is exactly what the browser lays out - there's no unit
-  translation step that could introduce drift between pagination and
-  rendering.
+  engine measured is emitted without a unit translation step, so page boxes and
+  element placements do not drift between pagination and rendering.
 
 This matters most when picking a `TextMeasurer`: pagination correctness
 depends on the measurer's pixel measurements agreeing with however the

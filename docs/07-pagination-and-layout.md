@@ -63,7 +63,7 @@ element (e.g. once to decide whether to split, again on the resulting
 fragments), so it must not have side effects that would change behavior
 between calls. (`Table` and `Row` use an internal cache to avoid recomputing
 expensive measurements repeatedly - see
-[Tables § Performance](05-tables.md#performance-row-heights-are-cached-not-recomputed-per-page) -
+[Tables: Performance](05-tables.md#performance-row-heights-are-cached-not-recomputed-per-page) -
 but the cache is keyed by content width and is purely a performance detail
 invisible to callers.)
 
@@ -119,7 +119,7 @@ next page. A continuation fragment carries `StartIndex` forward so a numbered
 list keeps counting correctly instead of restarting at 1.
 
 `Table` splits at **row boundaries**, with an optional mid-row split - see
-[Tables § Row splitting](05-tables.md#row-splitting-rowsplitbehavior) for the
+[Tables: Row splitting](05-tables.md#row-splitting-rowsplitbehavior) for the
 full behavior, which is configurable per table via `TableStyle.RowSplitBehavior`.
 
 ## `LayoutWarning`: when content doesn't fit
@@ -143,7 +143,7 @@ Check it after pagination if you want to detect "my report clipped content"
 programmatically instead of only finding out by eyeballing the rendered
 output - e.g. log a warning, or reject a generated report before it reaches
 a user, when a page comes back with warnings attached. See
-[Cookbook § Detecting layout warnings](10-cookbook.md#detecting-content-that-doesnt-fit-layoutwarning)
+[Cookbook: Detecting layout warnings](10-cookbook.md#detecting-content-that-doesnt-fit-layoutwarning)
 for a runnable example (an oversized image that can't be split and is taller
 than the entire page).
 
@@ -171,7 +171,7 @@ described above: encountering one closes the current page immediately,
 *unless* the current page is still empty (`usedHeightPx <= Epsilon`), in
 which case it's a no-op. This is what makes a leading or repeated page break
 never produce a blank page. See
-[Content Elements § Page break](03-content-elements.md#page-break).
+[Content Elements: Page break](03-content-elements.md#page-break).
 
 ## The output: `LayoutResult`
 

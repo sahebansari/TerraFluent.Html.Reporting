@@ -6,7 +6,7 @@ TerraFluent.Html.Reporting targets both `netstandard2.0` and `net10.0` and has z
 third-party dependencies. Add the package to your project:
 
 ```
-dotnet add package TerraFluent.Html.Reporting --version 0.2.0-alpha.1
+dotnet add package TerraFluent.Html.Reporting
 ```
 
 ## The four-step pipeline
@@ -51,14 +51,14 @@ string html = report.RenderHtml();                                        // 4. 
    [Rendering](08-rendering.md)) paginates the document and returns a single,
    self-contained HTML string: inline `<style>`, `@page` sizing, and one
    absolutely-positioned `<div>` per page. Open it directly in a browser, or
-   use the browser's "Print to PDF" to get a paginated PDF with the same page
-   breaks you see on screen.
+   use the browser's "Print to PDF" to get a paginated PDF with the same fixed
+   page geometry and computed breaks.
 
 ## Anatomy of the example above
 
 - **`PageSize.A4`** is one of three built-in sizes (`A4`, `Letter`, `Legal`);
   you can also build a custom size from millimeters, inches, or raw pixels.
-  See [Core Concepts § Page geometry](02-core-concepts.md#page-geometry-pagesize-margins-orientation).
+  See [Core Concepts: Page geometry](02-core-concepts.md#page-geometry-pagesize-margins-orientation).
 - **`SetMargins(40, 40, 60, 60)`** sets top/right/bottom/left margins in
   pixels (there's also a `SetMargins(allEdgesPx)` overload for a uniform
   margin).
@@ -86,7 +86,7 @@ This writes eleven HTML files (one per scenario, e.g.
 `01-getting-started.html`, `04-table-styling.html`,
 `10-sales-invoice.html`) to the build output directory and prints how many
 pages each one produced, plus any `LayoutWarning`s. Open any of them in a
-browser - what you see is exactly what "Print to PDF" will produce. See
+browser - the fixed page geometry is what "Print to PDF" will produce. See
 [`samples/TerraFluent.Html.Reporting.Sample/Program.cs`](../samples/TerraFluent.Html.Reporting.Sample/Program.cs)
 for the full scenario list, and the [Cookbook](10-cookbook.md) for some of
 them adapted into standalone recipes.

@@ -113,7 +113,7 @@ With `AllowSplitWithContinuedHeader`, "Item 2"'s note is truncated mid-sentence
 and continues on the next page under a header marked "(continued)". With
 `KeepRowIntact`, the whole row moves to the next page instead, leaving
 trailing whitespace on the first page. See
-[Tables § Row splitting](05-tables.md#row-splitting-rowsplitbehavior). Full
+[Tables: Row splitting](05-tables.md#row-splitting-rowsplitbehavior). Full
 source: [`TableStylingScenario.cs`](../samples/TerraFluent.Html.Reporting.Sample/Scenarios/TableStylingScenario.cs).
 
 ## A Header and Footer with a Logo Row
@@ -158,7 +158,7 @@ auto-share the rest of the content width; `RowVerticalAlignment.Middle` (the
 default) keeps the logo centered against the two-line text block next to it.
 See [Rows and Columns](06-rows-and-columns.md). Full source:
 [`SalesInvoiceScenario.cs`](../samples/TerraFluent.Html.Reporting.Sample/Scenarios/SalesInvoiceScenario.cs)
-(also see [§ A Complete Sales Invoice](#a-complete-sales-invoice) below for
+(also see [section A Complete Sales Invoice](#a-complete-sales-invoice) below for
 the rest of this report).
 
 ## Detecting Content That Doesn't Fit (`LayoutWarning`)
@@ -190,7 +190,7 @@ foreach (var warning in layout.Warnings)
 Check `LayoutResult.Warnings` after pagination - e.g. to log a warning or
 reject the report before it reaches a user - rather than only discovering
 clipped content by eyeballing the rendered HTML. See
-[Pagination and Layout § Warnings](07-pagination-and-layout.md#layoutwarning-when-content-doesnt-fit).
+[Pagination and Layout: Warnings](07-pagination-and-layout.md#layoutwarning-when-content-doesnt-fit).
 Full source: [`WarningsAndAsyncScenario.cs`](../samples/TerraFluent.Html.Reporting.Sample/Scenarios/WarningsAndAsyncScenario.cs).
 
 ## Streaming a Large Report to Disk Asynchronously
@@ -210,7 +210,7 @@ document as a single in-memory string, and the `async` signature exists so
 the final flush/dispose doesn't block a thread-pool thread in an async call
 chain (e.g. inside an ASP.NET request handler) - pagination and HTML
 generation themselves are still synchronous, CPU-bound work. See
-[Rendering § The APIs on `ReportDocument`](08-rendering.md#the-apis-on-reportdocument).
+[Rendering: The APIs on `ReportDocument`](08-rendering.md#the-apis-on-reportdocument).
 The sample project's [`Program.cs`](../samples/TerraFluent.Html.Reporting.Sample/Program.cs)
 uses this API for every scenario it writes out.
 
@@ -239,7 +239,7 @@ var report = ReportDocument.Create(PageSize.Letter, PageOrientation.Landscape)
 ```
 
 `PageOrientation.Landscape` swaps `PageSize.Letter`'s width/height (see
-[Core Concepts § Page geometry](02-core-concepts.md#page-geometry-pagesize-margins-orientation)).
+[Core Concepts: Page geometry](02-core-concepts.md#page-geometry-pagesize-margins-orientation)).
 Full source: [`LandscapeCertificateScenario.cs`](../samples/TerraFluent.Html.Reporting.Sample/Scenarios/LandscapeCertificateScenario.cs).
 
 ## Images: File, Bytes, and Base64, with Aspect-Ratio Sizing
@@ -258,7 +258,7 @@ c.AddImage(tallImageBytes, "image/png", heightPx: 200);
 c.AddImageFromBase64($"data:image/png;base64,{base64Source}", widthPx: 150, heightPx: 150);
 ```
 
-See [Content Elements § Image](03-content-elements.md#image) for how the
+See [Content Elements: Image](03-content-elements.md#image) for how the
 missing dimension is derived (sniffed from the image's own header bytes) and
 what happens if the format can't be recognized. Full source:
 [`ImagesScenario.cs`](../samples/TerraFluent.Html.Reporting.Sample/Scenarios/ImagesScenario.cs).
@@ -275,7 +275,7 @@ c.AddList(ListStyle.Numbered, Enumerable.Range(1, 60).Select(i => $"Numbered lis
 The list splits at item boundaries only (an item's own wrapped lines are
 never separated), and the continuation fragment's `StartIndex` keeps the
 `<ol start="...">` numbering correct. See
-[Pagination and Layout § Paragraph splitting](07-pagination-and-layout.md#paragraph-splitting-widoworphan-control)
+[Pagination and Layout: Paragraph splitting](07-pagination-and-layout.md#paragraph-splitting-widoworphan-control)
 for the related text-splitting rules. Full source:
 [`ListsScenario.cs`](../samples/TerraFluent.Html.Reporting.Sample/Scenarios/ListsScenario.cs).
 
@@ -295,7 +295,7 @@ Each chapter starts on a fresh page regardless of how much room was left on
 the previous one. A page break with nothing yet placed on the page is a
 no-op, so this never produces a blank page between chapters even if a
 chapter happens to end exactly at a page boundary already. See
-[Content Elements § Page break](03-content-elements.md#page-break). Full
+[Content Elements: Page break](03-content-elements.md#page-break). Full
 source: [`PageBreaksScenario.cs`](../samples/TerraFluent.Html.Reporting.Sample/Scenarios/PageBreaksScenario.cs).
 
 ## Injecting Raw HTML for Custom Markup
@@ -311,10 +311,10 @@ c.AddRawHtml(
 You supply the height because the layout engine cannot measure markup it
 doesn't understand; it treats the block as opaque and unsplittable, exactly
 like an oversized image (see
-[§ Detecting Content That Doesn't Fit](#detecting-content-that-doesnt-fit-layoutwarning)
+[section Detecting Content That Doesn't Fit](#detecting-content-that-doesnt-fit-layoutwarning)
 above if it doesn't fit). The HTML is emitted **verbatim** with no encoding -
 don't pass unsanitized end-user input here. See
-[Content Elements § Raw HTML](03-content-elements.md#raw-html). Full source:
+[Content Elements: Raw HTML](03-content-elements.md#raw-html). Full source:
 [`RawHtmlScenario.cs`](../samples/TerraFluent.Html.Reporting.Sample/Scenarios/RawHtmlScenario.cs).
 
 ## A Complete Sales Invoice
@@ -370,7 +370,7 @@ var report = ReportDocument.Create(PageSize.A4)
 Note the `\n` inside `AddParagraph`'s text - `ITextMeasurer.Measure` treats
 explicit newlines as hard breaks, so a single `Paragraph` can hold multiple
 visually distinct lines (an address block, here) without needing several
-separate elements. See [Tables § Per-cell style overrides](05-tables.md#per-cell-style-overrides)
+separate elements. See [Tables: Per-cell style overrides](05-tables.md#per-cell-style-overrides)
 for the `rightAlign` pattern used on numeric columns. Full source:
 [`SalesInvoiceScenario.cs`](../samples/TerraFluent.Html.Reporting.Sample/Scenarios/SalesInvoiceScenario.cs).
 

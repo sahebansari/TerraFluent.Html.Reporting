@@ -98,4 +98,4 @@ for a sketch of what implementing one looks like.
   results feed into page-break decisions.
 - [Extending the Library](11-extending.md) for a concrete starting point if
   you're writing a custom measurer.
-- [FAQ § Why didn't my page break where I expected?](12-faq-troubleshooting.md#why-didnt-my-page-break-exactly-where-i-expected)
+- [FAQ: Why didn't my page break where I expected?](12-faq-troubleshooting.md#why-didnt-my-page-break-exactly-where-i-expected)

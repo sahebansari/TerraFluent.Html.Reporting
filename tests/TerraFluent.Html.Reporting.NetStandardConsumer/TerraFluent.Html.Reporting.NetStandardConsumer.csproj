@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>TerraFluent.Html.Reporting.NetStandardConsumer</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TerraFluent.Html.Reporting\TerraFluent.Html.Reporting.csproj" />
+  </ItemGroup>
+
+</Project>

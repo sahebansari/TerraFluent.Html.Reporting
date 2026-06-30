@@ -11,11 +11,11 @@ self-contained HTML document instead.
 If you're new to the library, read these in order:
 
 1. **[Getting Started](01-getting-started.md)** - install the package, build
-   your first report, understand the four-step pipeline (`Create` →
-   `Header`/`Footer`/`Content` → `Build` → `RenderHtml`).
+   your first report, understand the four-step pipeline (`Create` ->
+   `Header`/`Footer`/`Content` -> `Build` -> `RenderHtml`).
 2. **[Core Concepts](02-core-concepts.md)** - the document model, the
    immutable "rebuild and replace" pattern behind every fluent modifier, units
-   (everything is a CSS pixel), and how a document goes from model → layout →
+   (everything is a CSS pixel), and how a document goes from model -> layout ->
    HTML.
 3. **[Content Elements](03-content-elements.md)** - the full reference for
    every `Add*` method and what it produces: paragraphs, headings, images,
@@ -41,12 +41,12 @@ If you're new to the library, read these in order:
 - **Units.** Every length in this library - page size, margins, font size,
   padding - is a CSS pixel (`px`), at 96px = 1 inch. There are no points,
   ems, or percentages anywhere in the public API; see
-  [Core Concepts § Units](02-core-concepts.md#units-everything-is-a-css-pixel).
+  [Core Concepts: Units](02-core-concepts.md#units-everything-is-a-css-pixel).
 - **Immutability.** Document model types (`TextStyle`, `ReportImage`, `Row`,
   `RowColumn`, ...) are immutable. Every fluent modifier (`.Bold()`,
   `.Margin(8)`, ...) produces a new instance and swaps it into the owning
   builder's element list; see
-  [Core Concepts § The rebuild-and-replace pattern](02-core-concepts.md#the-rebuild-and-replace-pattern).
+  [Core Concepts: The rebuild-and-replace pattern](02-core-concepts.md#the-rebuild-and-replace-pattern).
 - **`Add*` returns a builder.** Every `Add*` method on a content/section
   builder returns a small, short-lived builder or handle (`TextElementBuilder`,
   `ImageElementBuilder`, `RowHandle`, `RowColumnHandle`, ...) so you can chain

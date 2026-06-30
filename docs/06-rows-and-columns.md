@@ -35,12 +35,12 @@ AddRow(Action<RowBuilder> configure, double columnGapPx = 12, RowVerticalAlignme
 ```
 
 and return a `RowHandle` for chaining margin modifiers (see
-[Styling § Rows and row columns](04-styling.md#rows-and-row-columns)).
+[Styling: Rows and row columns](04-styling.md#rows-and-row-columns)).
 
 ## Column width resolution
 
 Same algorithm as table columns (see
-[Tables § Column width resolution](05-tables.md#column-width-resolution)):
+[Tables: Column width resolution](05-tables.md#column-width-resolution)):
 fixed-width columns get exactly what you specified; whatever's left after
 subtracting fixed widths *and* the gaps between columns
 (`columnGapPx * (columnCount - 1)`) is divided equally among the auto-width
@@ -115,7 +115,7 @@ content sits within its allotted space.
 Like an image, a row is always placed whole. If a row doesn't fit even on a
 completely empty page, it's force-placed and recorded as a `LayoutWarning` -
 the same fallback described in
-[Pagination and Layout § Warnings](07-pagination-and-layout.md#layoutwarning-when-content-doesnt-fit).
+[Pagination and Layout: Warnings](07-pagination-and-layout.md#layoutwarning-when-content-doesnt-fit).
 In practice this matters for rows with a lot of stacked content in one
 column (e.g. many lines of wrapped text) on a very short page - keep tall
 row content modest, or split it into separate non-row elements if it might
@@ -141,5 +141,5 @@ vertical space exactly like a text element's margin does.
   library's other elements.
 - [Styling](04-styling.md) for the full list of `RowHandle`/`RowColumnHandle`
   modifiers.
-- [Cookbook § Row layouts](10-cookbook.md#a-header-and-footer-with-a-logo-row)
+- [Cookbook: Row layouts](10-cookbook.md#a-header-and-footer-with-a-logo-row)
   for a complete invoice-style header/footer built from rows.

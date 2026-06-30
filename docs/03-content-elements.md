@@ -36,13 +36,13 @@ stacks simple content vertically inside a fixed-width slot - it supports
 headings/text/images/rules/spacers like a header/footer, but not a nested
 row, table, list, or raw HTML. Text elements inside a column also default to
 no trailing margin, for the same layout reason described in
-[Rows and Columns § Column content defaults](06-rows-and-columns.md#column-content-defaults).
+[Rows and Columns: Column content defaults](06-rows-and-columns.md#column-content-defaults).
 
 ## Paragraph
 
 A block of body text that word-wraps to the content width and may split
 across pages at a line boundary, with widow/orphan control (see
-[Pagination and Layout § Paragraph splitting](07-pagination-and-layout.md#paragraph-splitting-widoworphan-control)).
+[Pagination and Layout: Paragraph splitting](07-pagination-and-layout.md#paragraph-splitting-widoworphan-control)).
 
 ```csharp
 c.AddParagraph("This report summarizes sales activity for the period.");
@@ -65,7 +65,7 @@ c.AddHeading("Sales Summary", HeadingLevel.H1);
 ```
 
 Each `HeadingLevel` has a default font size/weight/bottom-margin (see
-[Styling § The heading scale](04-styling.md#the-heading-scale)); pass an
+[Styling: The heading scale](04-styling.md#the-heading-scale)); pass an
 explicit `TextStyle` as the third argument to override it. `AddHeading`
 returns a `TextElementBuilder`, same as `AddParagraph`.
 
@@ -96,7 +96,7 @@ c.AddImageFromBase64(dataUriOrBase64, widthPx: 120);  // from base64 (Content on
 `AddImage`/`AddImageFromBase64` return an `ImageElementBuilder` -
 `.AlignLeft()`/`.AlignCenter()`/`.AlignRight()` position the image within a
 container wider than itself, and `.Margin(...)`/`.Padding(...)` work the same
-as on text elements. See [Styling § Images](04-styling.md#images).
+as on text elements. See [Styling: Images](04-styling.md#images).
 
 Model type: [`ReportImage`](../src/TerraFluent.Html.Reporting/Model/Elements/ReportImage.cs).
 
@@ -216,7 +216,7 @@ engine cannot measure arbitrary HTML it doesn't understand, **you must supply
 the height it will occupy**; the engine treats it as an opaque, unsplittable
 block at exactly that height (like an oversized image, it can produce a
 `LayoutWarning` if it doesn't fit even on an empty page - see
-[Pagination and Layout § Warnings](07-pagination-and-layout.md#layoutwarning-when-content-doesnt-fit)).
+[Pagination and Layout: Warnings](07-pagination-and-layout.md#layoutwarning-when-content-doesnt-fit)).
 
 ```csharp
 c.AddRawHtml(

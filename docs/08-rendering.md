@@ -61,7 +61,7 @@ document's. The non-streaming `RenderDocument`/`RenderFragment` overloads are
 implemented as a thin wrapper: write to a `StringWriter`, then return its
 contents.
 
-See [Extending the Library § Custom renderer](11-extending.md#a-custom-ihtmlreportrenderer)
+See [Extending the Library: Custom renderer](11-extending.md#a-custom-ihtmlreportrenderer)
 if you want to implement this interface yourself (e.g. to emit a different
 page-wrapper structure, or PDF-specific markup).
 
@@ -110,7 +110,7 @@ Key points:
   `left`/`top`/`width`/`height` the layout engine computed - the renderer has
   no pagination logic of its own; it only translates each `ElementPlacement`
   from section-relative to page-absolute coordinates (see
-  [Pagination and Layout § The output](07-pagination-and-layout.md#the-output-layoutresult))
+  [Pagination and Layout: The output](07-pagination-and-layout.md#the-output-layoutresult))
   and calls `IReportElement.RenderHtml`.
 - **All CSS pixel values use the invariant culture** (`123.45px`, never
   `123,45px`) - see [`CssFormat`](../src/TerraFluent.Html.Reporting/Rendering/CssFormat.cs) -
@@ -118,7 +118,7 @@ Key points:
 - **All user-supplied text is HTML-encoded** before being written (again via
   `CssFormat.Encode`, i.e. `WebUtility.HtmlEncode`) - the one exception is
   `RawHtml`, which is emitted verbatim by design (see
-  [Content Elements § Raw HTML](03-content-elements.md#raw-html)).
+  [Content Elements: Raw HTML](03-content-elements.md#raw-html)).
 
 `RenderFragmentTo` emits the page styles and page `<div>`s without the
 `<html>`/`<head>`/`<body>` wrapper. Its stylesheet omits the document-level
@@ -141,5 +141,5 @@ may not guarantee that.
   how accurately layout matches real browser rendering.
 - [Extending the Library](11-extending.md) for writing a custom
   `IHtmlReportRenderer`.
-- [Cookbook § Streaming a large report](10-cookbook.md#streaming-a-large-report-to-disk-asynchronously)
+- [Cookbook: Streaming a large report](10-cookbook.md#streaming-a-large-report-to-disk-asynchronously)
   for a runnable example of the async file API.

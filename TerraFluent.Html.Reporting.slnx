@@ -7,6 +7,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/TerraFluent.Html.Reporting.BrowserTests/TerraFluent.Html.Reporting.BrowserTests.csproj" />
+    <Project Path="tests/TerraFluent.Html.Reporting.NetStandardConsumer/TerraFluent.Html.Reporting.NetStandardConsumer.csproj" />
     <Project Path="tests/TerraFluent.Html.Reporting.Tests/TerraFluent.Html.Reporting.Tests.csproj" />
   </Folder>
 </Solution>

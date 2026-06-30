@@ -57,7 +57,7 @@ the page width you're targeting.
 
 The table renders with `table-layout:fixed` and an explicit `<colgroup>`
 matching these resolved widths - see
-[Rendering § What the HTML looks like](08-rendering.md#what-the-html-looks-like)
+[Rendering: What the HTML looks like](08-rendering.md#what-the-html-looks-like)
 for why the `<table>` itself is deliberately *not* pinned to `width:100%`.
 
 ## `TableStyle`
@@ -163,16 +163,16 @@ measured height (keyed by content width) the first time it's needed, and
 `Split` slices that cached array into the head/tail fragments it produces
 rather than recomputing - so an N-row table is measured in O(N) total work
 across its entire pagination, however many pages it ends up spanning, not
-O(N²). You don't need to do anything to get this - it's automatic - but it's
+O(N^2). You don't need to do anything to get this - it's automatic - but it's
 worth knowing if you're profiling a very large table (tens of thousands of
 rows) and wondering where the cache lives.
 
 ## Where to go next
 
-- [Content Elements § Table](03-content-elements.md#table) for where
+- [Content Elements: Table](03-content-elements.md#table) for where
   `AddTable` fits among the other element types.
 - [Pagination and Layout](07-pagination-and-layout.md) for the general
   measure/split contract every element (including `Table`) implements.
-- [Cookbook § Multi-page table](10-cookbook.md#a-multi-page-report-with-header-footer-and-a-table-that-spans-pages)
-  and [Cookbook § Table styling comparison](10-cookbook.md#comparing-table-row-split-behaviors)
+- [Cookbook: Multi-page table](10-cookbook.md#a-multi-page-report-with-header-footer-and-a-table-that-spans-pages)
+  and [Cookbook: Table styling comparison](10-cookbook.md#comparing-table-row-split-behaviors)
   for runnable examples.

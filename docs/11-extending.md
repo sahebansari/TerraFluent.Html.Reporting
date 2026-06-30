@@ -61,7 +61,7 @@ completely:
   `font-family` resolves to a different one in the consumer's browser,
   you've just moved the mismatch rather than removed it.
 - **Package it separately if it has native/runtime dependencies.** The
-  intended pattern (see [Text Measurement § Supplying a precise measurer](09-text-measurement.md#supplying-a-precise-measurer))
+  intended pattern (see [Text Measurement: Supplying a precise measurer](09-text-measurement.md#supplying-a-precise-measurer))
   is a companion NuGet package depending on the core library, keeping the
   core package's own dependency footprint at zero.
 
@@ -125,7 +125,7 @@ string html = report.RenderHtml(new MyCustomRenderer());
 The key insight a custom renderer needs to internalize: by the time it runs,
 **all positioning decisions are already made** - `LayoutResult` is a plain
 description of pages and placements (see
-[Pagination and Layout § The output](07-pagination-and-layout.md#the-output-layoutresult)).
+[Pagination and Layout: The output](07-pagination-and-layout.md#the-output-layoutresult)).
 A renderer's job is purely translation - section-relative coordinates to
 whatever coordinate system your output format wants - not pagination logic.
 `RenderContext(pageNumber, totalPages)` is what lets `PageNumberText`
@@ -175,7 +175,7 @@ ReportDocument.Create(PageSize.A4)
     .Build();
 ```
 
-Re-read [Pagination and Layout § The `IReportElement` contract](07-pagination-and-layout.md#the-ireportelement-contract)
+Re-read [Pagination and Layout: The `IReportElement` contract](07-pagination-and-layout.md#the-ireportelement-contract)
 before writing one of these - in particular: `Measure` must be pure and
 side-effect-free (the engine may call it repeatedly), `Split` is only ever
 called *after* `Measure` reported more height than is available, and if your

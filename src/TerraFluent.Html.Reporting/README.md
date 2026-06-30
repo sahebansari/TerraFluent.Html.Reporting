@@ -3,12 +3,12 @@
 A fluent .NET library for generating paginated, print-ready HTML reports - the
 same kind of fixed-page layout you get from a PDF report generator (TerraPDF, iText,
 QuestPDF), but outputting HTML/CSS so the result opens in any browser and
-prints (or "Print to PDF") with correct page breaks.
+prints (or "Print to PDF") with computed page breaks.
 
 ## Installation
 
 ```shell
-dotnet add package TerraFluent.Html.Reporting --version 0.2.0-alpha.1
+dotnet add package TerraFluent.Html.Reporting
 ```
 
 ```csharp
@@ -70,5 +70,6 @@ registry.
 
 ## Status
 
-This library is pre-1.0 and under active development. The public API may
-still change between minor versions until 1.0.
+This library is stable for public use as of 1.0. The default text measurer is
+approximate; supply a custom `ITextMeasurer` when pagination must match a
+specific rendering engine pixel-for-pixel.

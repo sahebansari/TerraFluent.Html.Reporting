@@ -5,6 +5,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-06-30
+
+### Added
+- Stable-release package metadata, including a NuGet package icon.
+- A `netstandard2.0` consumer smoke project so CI validates the asset used by
+  non-`net10.0` consumers.
+- A public API snapshot guard for the exported type surface.
+
+### Changed
+- Public documentation and release checklist now describe the stable package
+  rather than the alpha prerelease.
+- README wording now distinguishes fixed page geometry/computed pagination from
+  pixel-perfect text wrapping, which still requires a custom `ITextMeasurer`.
+
 ## [0.2.0-alpha.1] - 2026-06-28
 
 ### Added

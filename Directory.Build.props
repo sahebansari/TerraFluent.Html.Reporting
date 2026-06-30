@@ -11,14 +11,14 @@
     <Authors>Saheb Ansari</Authors>
     <Company>Saheb Ansari</Company>
     <Product>TerraFluent.Html.Reporting</Product>
-    <Version>0.2.0-alpha.1</Version>
+    <Version>1.0.0</Version>
     <Copyright>Copyright (c) 2026 Saheb Ansari</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>html;report;pagination;pdf;fluent;print</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/sahebansari/TerraFluent.Html.Reporting</RepositoryUrl>
     <PackageProjectUrl>https://github.com/sahebansari/TerraFluent.Html.Reporting</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/sahebansari/TerraFluent.Html.Reporting/blob/master/CHANGELOG.md#020-alpha1---2026-06-28</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/sahebansari/TerraFluent.Html.Reporting/blob/master/CHANGELOG.md#100---2026-06-30</PackageReleaseNotes>
 
     <!-- SourceLink: lets consumers step through this library's actual source
          from the .snupkg while debugging, instead of decompiled IL. -->

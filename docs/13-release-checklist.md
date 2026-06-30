@@ -30,6 +30,13 @@
    dotnet test tests/TerraFluent.Html.Reporting.BrowserTests/TerraFluent.Html.Reporting.BrowserTests.csproj --configuration Release --no-build
    ```
 
+   On Windows machines without PowerShell 7 (`pwsh`), run the generated script
+   with Windows PowerShell instead:
+
+   ```powershell
+   powershell -File tests/TerraFluent.Html.Reporting.BrowserTests/bin/Release/net10.0/playwright.ps1 install chromium firefox webkit
+   ```
+
 6. Generate and inspect the package:
 
    ```shell
@@ -43,8 +50,8 @@
 Push a tag whose name is `v` followed by the exact package version, for example:
 
 ```shell
-git tag v0.2.0-alpha.1
-git push origin v0.2.0-alpha.1
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 The CI workflow verifies the tag/package version match, obtains a short-lived NuGet credential through OIDC, and publishes the package.
