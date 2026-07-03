@@ -8,6 +8,20 @@ self-contained HTML/CSS that opens in a browser or can be printed to PDF.
 Use it when you want PDF-style report layout without taking a dependency on a
 PDF engine. The library targets `netstandard2.0` and `net10.0`.
 
+## What's New in 1.1.0
+
+- `AddBarcode(value, moduleWidthPx, heightPx, quietZoneModules)` on content,
+  header/footer, and row-column builders: generates a Code 128 barcode
+  natively as a PNG image - no external barcode library or web service
+  involved. Returns the same image builder as `AddImage`, so it supports
+  alignment, margin, and padding modifiers. See
+  [Content Elements: Barcode](https://github.com/sahebansari/TerraFluent.Html.Reporting/blob/master/docs/03-content-elements.md#barcode)
+  and the
+  [cookbook recipe](https://github.com/sahebansari/TerraFluent.Html.Reporting/blob/master/docs/10-cookbook.md#a-barcode-in-the-header-invoice-number).
+
+See [CHANGELOG.md](https://github.com/sahebansari/TerraFluent.Html.Reporting/blob/master/CHANGELOG.md#110---2026-07-03)
+for the full release notes.
+
 ## Install
 
 ```shell
@@ -54,6 +68,9 @@ print or save it as PDF.
 - Repeating headers and footers, including page number templates.
 - Paragraphs, headings, images, tables, lists, rules, spacers, page breaks, raw
   HTML, and side-by-side row layouts.
+- Natively generated Code 128 barcode images - no external library or web
+  service - handy for an invoice number in the header or a tracking number on
+  a label.
 - Fluent styling for text, margins, padding, alignment, images, rows, and
   tables.
 - Pagination with line-level paragraph splitting, table row splitting, repeated
@@ -85,9 +102,9 @@ Full documentation and runnable samples live in the GitHub repository:
 
 ## Status
 
-This library is stable for public use as of `1.0.0`. The default text measurer
-is approximate; supply a custom `ITextMeasurer` when pagination must match a
-specific rendering engine pixel-for-pixel.
+This library is stable for public use. The current version is `1.1.0`. The
+default text measurer is approximate; supply a custom `ITextMeasurer` when
+pagination must match a specific rendering engine pixel-for-pixel.
 
 ## License
 
