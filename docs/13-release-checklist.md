@@ -47,25 +47,11 @@
 
 ## Publishing
 
-**For now**, while releases are still frequent and low-stakes, the CI
-workflow publishes to NuGet.org on **every push to `master`** whose
-`<Version>` in `Directory.Build.props` hasn't already been published -
-`dotnet nuget push --skip-duplicate` makes an unbumped version a no-op rather
-than a failure. This means step 2 above (bumping `<Version>`) is what
-actually triggers a release once merged to `master` - no extra step needed.
-Tighten this back to tag-only once releases need to be more deliberate (see
-the workflow's `publish` job condition in
-[`ci.yml`](../.github/workflows/ci.yml)).
-
-Tag-based publishing still works too: push a tag whose name is `v` followed
-by the exact package version, for example:
+Push a tag whose name is `v` followed by the exact package version, for example:
 
 ```shell
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-For a tag push, the CI workflow additionally verifies the tag/package version
-match before publishing (skipped for a plain `master` push, since there's no
-tag to compare against). Either way, it obtains a short-lived NuGet
-credential through OIDC and publishes the package.
+The CI workflow verifies the tag/package version match, obtains a short-lived NuGet credential through OIDC, and publishes the package.

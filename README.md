@@ -10,7 +10,7 @@ PDF engine. The library targets `netstandard2.0` and `net10.0`.
 
 [![View Sample Reports](https://img.shields.io/badge/View-Sample%20Reports-2f4858?style=for-the-badge)](https://sahebansari.github.io/TerraFluent.Html.Reporting/SampleReports/index.html)
 
-## What's New in 1.1.0
+## What's New in 1.1.1
 
 - `AddBarcode(value, moduleWidthPx, heightPx, quietZoneModules)` on content,
   header/footer, and row-column builders: generates a Code 128 barcode
@@ -25,7 +25,7 @@ PDF engine. The library targets `netstandard2.0` and `net10.0`.
   [Tables: Column and row spans](docs/05-tables.md#column-and-row-spans) and
   the [cookbook recipe](docs/10-cookbook.md#grouping-rows-with-rowspan).
 
-See [CHANGELOG.md](CHANGELOG.md#110---2026-07-03) for the full release notes.
+See [CHANGELOG.md](CHANGELOG.md#111---2026-07-03) for the full release notes.
 
 ## Install
 
@@ -136,7 +136,7 @@ invoice with a barcode in the header, and a table using column/row spans.
 
 ## Status
 
-This library is stable for public use. The current version is `1.1.0`. See
+This library is stable for public use. The current version is `1.1.1`. See
 [CHANGELOG.md](CHANGELOG.md) for release history and
 [known limitations](docs/12-faq-troubleshooting.md#known-limitations) for the
 current boundaries.

@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [1.1.0] - 2026-07-03
+## [1.1.1] - 2026-07-03
 
 ### Added
 - `AddBarcode(value, moduleWidthPx, heightPx, quietZoneModules)` on `ContentBuilder`, `PageSectionBuilder` (header/footer), and `RowColumnBuilder`: generates a Code 128 barcode natively as a PNG `ReportImage` - no external barcode library or web service involved. Returns the same `ImageElementBuilder` as `AddImage`, so it supports `AlignLeft/Center/Right`, `Margin(...)`, and `Padding(...)` like any other image. `value` must be non-empty printable ASCII (32-126); anything else throws `ArgumentException`.
@@ -12,6 +12,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 - Reworked the root and package `README.md` with a clearer quick start, a "What It Supports" summary, and an explicit Code 128 barcode callout.
+- Added a "View Sample Reports" badge to both `README.md`s, linking to the GitHub Pages-hosted sample output.
+
+### Fixed
+- CI's `publish` job had lost its `if:` gate and its tag/package version verification step; both are restored, so publishing again only runs for a pushed `v*` tag and only after confirming the tag matches `<Version>` in `Directory.Build.props`.
 
 ## [1.0.0] - 2026-06-30
 

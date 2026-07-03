@@ -109,7 +109,7 @@ a benign race, not a correctness issue. See
 
 ## Known limitations
 
-As of 1.1.0:
+As of 1.1.1:
 
 - **Text measurement is approximate by default.** Exact, pixel-perfect
   pagination requires supplying a custom `ITextMeasurer` (see

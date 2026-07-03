@@ -10,7 +10,7 @@ PDF engine. The library targets `netstandard2.0` and `net10.0`.
 
 [![View Sample Reports](https://img.shields.io/badge/View-Sample%20Reports-2f4858?style=for-the-badge)](https://sahebansari.github.io/TerraFluent.Html.Reporting/SampleReports/index.html)
 
-## What's New in 1.1.0
+## What's New in 1.1.1
 
 - `AddBarcode(value, moduleWidthPx, heightPx, quietZoneModules)` on content,
   header/footer, and row-column builders: generates a Code 128 barcode
@@ -27,7 +27,7 @@ PDF engine. The library targets `netstandard2.0` and `net10.0`.
   and the
   [cookbook recipe](https://github.com/sahebansari/TerraFluent.Html.Reporting/blob/master/docs/10-cookbook.md#grouping-rows-with-rowspan).
 
-See [CHANGELOG.md](https://github.com/sahebansari/TerraFluent.Html.Reporting/blob/master/CHANGELOG.md#110---2026-07-03)
+See [CHANGELOG.md](https://github.com/sahebansari/TerraFluent.Html.Reporting/blob/master/CHANGELOG.md#111---2026-07-03)
 for the full release notes.
 
 ## Install
@@ -112,7 +112,7 @@ Full documentation and runnable samples live in the GitHub repository:
 
 ## Status
 
-This library is stable for public use. The current version is `1.1.0`. The
+This library is stable for public use. The current version is `1.1.1`. The
 default text measurer is approximate; supply a custom `ITextMeasurer` when
 pagination must match a specific rendering engine pixel-for-pixel.
 
