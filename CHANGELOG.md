@@ -5,6 +5,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-03
+
+### Added
+- `AddBarcode(value, moduleWidthPx, heightPx, quietZoneModules)` on `ContentBuilder`, `PageSectionBuilder` (header/footer), and `RowColumnBuilder`: generates a Code 128 barcode natively as a PNG `ReportImage` - no external barcode library or web service involved. Returns the same `ImageElementBuilder` as `AddImage`, so it supports `AlignLeft/Center/Right`, `Margin(...)`, and `Padding(...)` like any other image. `value` must be non-empty printable ASCII (32-126); anything else throws `ArgumentException`.
+
+### Changed
+- Reworked the root and package `README.md` with a clearer quick start, a "What It Supports" summary, and an explicit Code 128 barcode callout.
+
 ## [1.0.0] - 2026-06-30
 
 ### Added

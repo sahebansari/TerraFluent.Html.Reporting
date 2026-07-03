@@ -182,6 +182,44 @@ public class FluentBuilderTests
     }
 
     [Fact]
+    public void AddBarcode_AddsCode128PngImageAndSupportsImageModifiers()
+    {
+        var document = ReportDocument.Create(PageSize.A4)
+            .Content(c => c.AddBarcode("INV-1001", moduleWidthPx: 2, heightPx: 48).AlignRight().MarginBottom(12))
+            .Build();
+
+        var image = Assert.IsType<ReportImage>(Assert.Single(document.ContentElements));
+        Assert.Equal("image/png", image.MimeType);
+        Assert.Equal(48, image.HeightPx);
+        Assert.Equal(TextAlignment.Right, image.Alignment);
+        Assert.Equal(12, image.MarginBottomPx);
+
+        var bytes = image.ImageBytes;
+        Assert.Equal(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, bytes.Take(4).ToArray());
+    }
+
+    [Fact]
+    public void AddBarcode_OnRowColumn_AddsImageToColumn()
+    {
+        var document = ReportDocument.Create(PageSize.A4)
+            .Content(c => c.AddRow(row => row.AddColumn(col => col.AddBarcode("SHIP-42", heightPx: 30).AlignCenter())))
+            .Build();
+
+        var row = Assert.IsType<Row>(Assert.Single(document.ContentElements));
+        var image = Assert.IsType<ReportImage>(Assert.Single(row.Columns[0].Elements));
+        Assert.Equal(30, image.HeightPx);
+        Assert.Equal(TextAlignment.Center, image.Alignment);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Contains\nNewline")]
+    public void AddBarcode_InvalidValue_Throws(string value)
+    {
+        Assert.ThrowsAny<ArgumentException>(() => new ContentBuilder().AddBarcode(value));
+    }
+
+    [Fact]
     public void SetMargins_FourValues_MapsToTopRightBottomLeft()
     {
         var document = ReportDocument.Create(PageSize.A4)

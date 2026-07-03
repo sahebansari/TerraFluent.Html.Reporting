@@ -19,6 +19,7 @@ public static class ConsumerSmoke
             {
                 content.AddHeading("Compatibility Smoke", HeadingLevel.H1);
                 content.AddParagraph("This project compiles against the netstandard2.0 package asset.");
+                content.AddBarcode("NETSTANDARD-2.0", heightPx: 40).AlignCenter();
                 content.AddTable(table =>
                 {
                     table.AddColumns("Feature", "Result");

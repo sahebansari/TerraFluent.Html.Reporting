@@ -40,6 +40,10 @@ public sealed class PageSectionBuilder
     public ImageElementBuilder AddImage(byte[] imageBytes, string mimeType = "image/png", double? widthPx = null, double? heightPx = null) =>
         AddImageCore(ReportImage.FromBytes(imageBytes, mimeType, widthPx, heightPx));
 
+    /// <summary>Adds a Code 128 barcode as an image.</summary>
+    public ImageElementBuilder AddBarcode(string value, double moduleWidthPx = 2, double heightPx = 60, int quietZoneModules = 10) =>
+        AddImageCore(BarcodeImage.CreateCode128(value, moduleWidthPx, heightPx, quietZoneModules));
+
     private ImageElementBuilder AddImageCore(ReportImage image)
     {
         var index = _elements.Count;

@@ -161,6 +161,53 @@ See [Rows and Columns](06-rows-and-columns.md). Full source:
 (also see [section A Complete Sales Invoice](#a-complete-sales-invoice) below for
 the rest of this report).
 
+## A Barcode in the Header (Invoice Number)
+
+A Code 128 barcode of the invoice number, pinned to the top-right corner of
+the header next to the company info, using a fixed-width right-aligned
+column:
+
+```csharp
+const string invoiceNumber = "20264471";
+
+var report = ReportDocument.Create(PageSize.A4)
+    .SetMargins(40)
+    .Header(h =>
+    {
+        h.AddRow(row =>
+        {
+            row.AddColumn(col =>
+            {
+                col.AddText("Acme Corporation").Bold().FontSize(20);
+                col.AddText("123 Market Street, Springfield, USA").FontSize(12);
+            });
+            row.AddColumn(300, col =>
+            {
+                col.AddBarcode(invoiceNumber, moduleWidthPx: 2, heightPx: 40).AlignRight();
+                col.AddText(invoiceNumber, TextStyle.Default.With(alignment: TextAlignment.Right, marginBottomPx: 0)).FontSize(10);
+            });
+        }, verticalAlignment: RowVerticalAlignment.Top);
+        h.AddRule();
+    })
+    .Content(c => { /* ... */ })
+    .Build();
+```
+
+The barcode column has a fixed `300px` width so it doesn't grow or shrink
+with the company-info column, and `.AlignRight()` pins the barcode (and the
+human-readable number printed underneath it) flush against the page's right
+margin. **The column must be at least as wide as the barcode's rendered
+width** (`quietZoneModules * 2 + sum of per-character module widths`, times
+`moduleWidthPx` - see [Content Elements: Barcode](03-content-elements.md#barcode))
+or the barcode overflows past the column - and past the page's right margin -
+instead of stopping at it; an 8-digit Code 128 value at the defaults shown
+here renders to 286px wide, so 300px leaves a small safety margin.
+`RowVerticalAlignment.Top` keeps both columns aligned to the top of the
+header instead of centering the shorter one. See
+[Content Elements: Barcode](03-content-elements.md#barcode) for the encoding
+rules and parameters. Full source:
+[`InvoiceBarcodeScenario.cs`](../samples/TerraFluent.Html.Reporting.Sample/Scenarios/InvoiceBarcodeScenario.cs).
+
 ## Detecting Content That Doesn't Fit (`LayoutWarning`)
 
 An image taller than the entire page's content area, and unsplittable by

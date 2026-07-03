@@ -1,75 +1,96 @@
 # TerraFluent.Html.Reporting
 
-A fluent .NET library for generating paginated, print-ready HTML reports - the
-same kind of fixed-page layout you get from a PDF report generator (TerraPDF, iText,
-QuestPDF), but outputting HTML/CSS so the result opens in any browser and
-prints (or "Print to PDF") with computed page breaks.
+TerraFluent.Html.Reporting is a fluent, dependency-free .NET library for
+building paginated, print-ready HTML reports. It gives you fixed page sizes,
+headers and footers, measured content flow, table/list pagination, and
+self-contained HTML/CSS that opens in a browser or can be printed to PDF.
 
-## Installation
+Use it when you want PDF-style report layout without taking a dependency on a
+PDF engine. The library targets `netstandard2.0` and `net10.0`.
+
+## Install
 
 ```shell
 dotnet add package TerraFluent.Html.Reporting
 ```
+
+## Quick Start
 
 ```csharp
 using TerraFluent.Html.Reporting.Model;
 
 var report = ReportDocument.Create(PageSize.A4, PageOrientation.Portrait)
     .SetMargins(40, 40, 60, 60)
-    .Header(h => h.AddText("Monthly Sales Report").AlignCenter().Bold())
-    .Footer(f => f.AddPageNumber("Page {page} of {totalPages}"))
-    .Content(c =>
+    .Header(header => header
+        .AddText("Monthly Sales Report")
+        .AlignCenter()
+        .Bold())
+    .Footer(footer => footer.AddPageNumber("Page {page} of {totalPages}"))
+    .Content(content =>
     {
-        c.AddHeading("Sales Summary", HeadingLevel.H1);
-        c.AddParagraph("This report summarizes...");
-        c.AddImage("logo.png", widthPx: 120, heightPx: 60);
-        c.AddTable(table =>
+        content.AddHeading("Sales Summary", HeadingLevel.H1);
+        content.AddParagraph("This report summarizes sales activity for the period.");
+        content.AddImage("logo.png", widthPx: 120, heightPx: 60);
+
+        content.AddTable(table =>
         {
             table.AddColumns("Product", "Qty", "Revenue");
             table.AddRow("Widget A", "120", "$2,400");
+            table.AddRow("Widget B", "85", "$1,700");
         });
     })
     .Build();
 
-string html = report.RenderHtml();
+var html = report.RenderHtml();
+report.RenderHtmlDocument("monthly-sales.html");
 ```
 
-## How it works
+Open the generated HTML in a browser, or use the browser's print dialog to
+print or save it as PDF.
 
-- Pages have a fixed size (A4/Letter/Legal/custom) and margins; header and
-  footer are fixed-height sections repeated on every page.
-- Content elements (paragraphs, headings, images, tables, lists, rules) are
-  measured and laid out top-to-bottom; an element that doesn't fit on the
-  current page is split - at a line boundary for text, at a row boundary for
-  tables (with the header repeated and marked "(continued)") - rather than
-  just being pushed whole to the next page where avoidable.
-- `AddRow` lays out columns side by side (e.g. a logo next to a company name)
-  in a header, footer, or the main content; each column stacks its own
-  elements vertically. Like an image, a row never splits across pages.
-- Every `Add*` method returns a builder you can chain margin/padding/alignment
-  modifiers onto, e.g. `c.AddImage("logo.png").AlignCenter().Margin(8)` or
-  `c.AddParagraph("Note").Padding(12)`.
-- Output is a single self-contained HTML string: inline `<style>`, `@page`
-  sizing, and one absolutely-positioned `<div>` per page, so the layout you
-  see in a browser is the layout you get when printing.
+## What It Supports
 
-## Text measurement
+- Fixed page geometry: A4, Letter, Legal, portrait/landscape, or custom sizes.
+- Repeating headers and footers, including page number templates.
+- Paragraphs, headings, images, tables, lists, rules, spacers, page breaks, raw
+  HTML, and side-by-side row layouts.
+- Fluent styling for text, margins, padding, alignment, images, rows, and
+  tables.
+- Pagination with line-level paragraph splitting, table row splitting, repeated
+  table headers, and numbered-list continuation.
+- Layout warnings for content that cannot fit on an empty page.
+- Streaming render APIs and async file rendering for larger reports.
+- Extension points for custom elements, renderers, and text measurement.
 
-Pagination needs to know how tall a block of text will be before it's
-rendered, which means measuring how it wraps. The bundled
-`ApproximateTextMeasurer` does this with zero runtime dependencies, using
-generic sans-serif character-width tables - it will not match a browser's
-real font rendering pixel-for-pixel, particularly for proportional fonts other
-than a plain sans-serif, or text with heavy kerning/ligatures.
+## Text Measurement
 
-For exact pagination, implement `ITextMeasurer` against a real rendering
-engine (e.g. a headless browser, or `System.Drawing`/GDI+ on Windows) and pass
-it to `UseTextMeasurer(...)` on the document builder. No ready-made precise
-measurer ships today - this is a documented extension point, not a plug-in
-registry.
+Pagination depends on measuring text before it is rendered. The built-in
+`ApproximateTextMeasurer` keeps the core package zero-dependency by using
+generic character-width tables. It is suitable for many reports, but it is not
+a pixel-perfect browser text layout engine.
+
+If page breaks must match a specific rendering engine exactly, implement
+`ITextMeasurer` and pass it to `UseTextMeasurer(...)` when building the
+document.
+
+## Documentation
+
+Full documentation and runnable samples live in the GitHub repository:
+
+- [Documentation index](https://github.com/sahebansari/TerraFluent.Html.Reporting/tree/master/docs)
+- [Getting started](https://github.com/sahebansari/TerraFluent.Html.Reporting/blob/master/docs/01-getting-started.md)
+- [Cookbook](https://github.com/sahebansari/TerraFluent.Html.Reporting/blob/master/docs/10-cookbook.md)
+- [FAQ / Troubleshooting](https://github.com/sahebansari/TerraFluent.Html.Reporting/blob/master/docs/12-faq-troubleshooting.md)
+- [Source repository](https://github.com/sahebansari/TerraFluent.Html.Reporting)
 
 ## Status
 
-This library is stable for public use as of 1.0. The default text measurer is
-approximate; supply a custom `ITextMeasurer` when pagination must match a
+This library is stable for public use as of `1.0.0`. The default text measurer
+is approximate; supply a custom `ITextMeasurer` when pagination must match a
 specific rendering engine pixel-for-pixel.
+
+## License
+
+TerraFluent.Html.Reporting is licensed under the MIT License. You can use it
+in personal, commercial, and open-source projects, modify it, and redistribute
+it, provided the original license notice is included.

@@ -82,9 +82,10 @@ The fastest way to see the library in action is the bundled sample project:
 dotnet run --project samples/TerraFluent.Html.Reporting.Sample
 ```
 
-This writes eleven HTML files (one per scenario, e.g.
+This writes twelve HTML files (one per scenario, e.g.
 `01-getting-started.html`, `04-table-styling.html`,
-`10-sales-invoice.html`) to the build output directory and prints how many
+`10-sales-invoice.html`, `12-invoice-with-barcode.html`) to the build output
+directory and prints how many
 pages each one produced, plus any `LayoutWarning`s. Open any of them in a
 browser - the fixed page geometry is what "Print to PDF" will produce. See
 [`samples/TerraFluent.Html.Reporting.Sample/Program.cs`](../samples/TerraFluent.Html.Reporting.Sample/Program.cs)
