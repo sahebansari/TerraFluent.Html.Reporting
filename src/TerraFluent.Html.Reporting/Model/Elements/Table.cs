@@ -16,8 +16,21 @@ namespace TerraFluent.Html.Reporting.Model.Elements;
 /// remainder continuing as the first row on the next page under a repeated,
 /// "(continued)"-suffixed header.
 /// </summary>
+/// <remarks>
+/// A cell's <see cref="TableCell.ColSpan"/> and <see cref="TableCell.RowSpan"/>
+/// let it cover more than one column/row - see <see cref="BuildRowLayout"/> for
+/// the exact-occupancy validation this requires. Rows linked by an active
+/// <see cref="TableCell.RowSpan"/> are treated as one atomic group for
+/// pagination: the group either fits together on a page or moves to the next
+/// page as a whole. <see cref="RowSplitBehavior.AllowSplitWithContinuedHeader"/>'s
+/// mid-row line truncation only ever applies to a lone row with no active
+/// rowspan.
+/// </remarks>
 public sealed class Table : IReportElement
 {
+    /// <summary>One cell placed at its starting column, as resolved by <see cref="BuildRowLayout"/>.</summary>
+    private readonly record struct CellSlot(TableCell Cell, int StartColumn);
+
     /// <summary>The column definitions.</summary>
     public IReadOnlyList<TableColumn> Columns { get; }
 
@@ -33,6 +46,17 @@ public sealed class Table : IReportElement
     /// </summary>
     public bool IsContinuation { get; }
 
+    // Per-row list of cells that start in that row (i.e. excluding columns
+    // covered by an earlier row's RowSpan), each tagged with its starting
+    // column index. Computed once - unlike row heights, this doesn't depend
+    // on content width - and reused by Measure/Split/RenderHtml.
+    private readonly IReadOnlyList<CellSlot>[] _rowLayout;
+
+    // For row i, the exclusive end index of the maximal group of rows linked
+    // by an active RowSpan starting at or before i (a lone row is its own
+    // group: _groupEndForRow[i] == i + 1). See ComputeGroupBoundaries.
+    private readonly int[] _groupEndForRow;
+
     // Row heights computed for a given content width, in Rows order. Populated
     // lazily by GetRowHeights and propagated forward (sliced, not recomputed)
     // when Split produces head/tail fragments - see GetRowHeights for why this
@@ -41,9 +65,13 @@ public sealed class Table : IReportElement
     private double _cachedForContentWidthPx = double.NaN;
 
     /// <summary>Creates a table.</summary>
-    /// <exception cref="ArgumentException">A row's cell count does not match <paramref name="columns"/>.Count.</exception>
+    /// <exception cref="ArgumentException">
+    /// A row's cells don't exactly account for every column, once
+    /// <see cref="TableCell.ColSpan"/> and any <see cref="TableCell.RowSpan"/>
+    /// carried over from an earlier row are taken into account.
+    /// </exception>
     public Table(IReadOnlyList<TableColumn> columns, IReadOnlyList<TableRow> rows, TableStyle? style = null, bool isContinuation = false)
-        : this(columns, rows, style, isContinuation, precomputedRowHeights: null, precomputedForContentWidthPx: double.NaN)
+        : this(columns, rows, style, isContinuation, precomputedRowHeights: null, precomputedForContentWidthPx: double.NaN, precomputedRowLayout: null)
     {
     }
 
@@ -53,26 +81,143 @@ public sealed class Table : IReportElement
         TableStyle? style,
         bool isContinuation,
         double[]? precomputedRowHeights,
-        double precomputedForContentWidthPx)
+        double precomputedForContentWidthPx,
+        IReadOnlyList<CellSlot>[]? precomputedRowLayout)
     {
         Columns = Guard.Snapshot(columns, nameof(columns));
         Rows = Guard.Snapshot(rows, nameof(rows));
         Style = style ?? TableStyle.Default;
         IsContinuation = isContinuation;
 
-        for (var i = 0; i < Rows.Count; i++)
-        {
-            if (Rows[i].Cells.Count != Columns.Count)
-            {
-                throw new ArgumentException(
-                    $"Row {i} has {Rows[i].Cells.Count} cell(s) but the table has {Columns.Count} column(s). " +
-                    "Every row must supply exactly one cell per column.",
-                    nameof(rows));
-            }
-        }
+        _rowLayout = precomputedRowLayout ?? BuildRowLayout(Columns, Rows);
+        _groupEndForRow = ComputeGroupBoundaries(_rowLayout, Columns.Count);
 
         _cachedRowHeights = precomputedRowHeights;
         _cachedForContentWidthPx = precomputedForContentWidthPx;
+    }
+
+    /// <summary>
+    /// Walks each row left to right, resolving which column each cell starts
+    /// at. A column already covered by an earlier row's <see cref="TableCell.RowSpan"/>
+    /// is skipped (no cell consumed for it); otherwise the row's next cell is
+    /// placed there and, if its <see cref="TableCell.ColSpan"/> is greater
+    /// than 1, occupies the following columns too. A row must consume exactly
+    /// enough cells to account for every column - too few or too many throws.
+    /// </summary>
+    private static IReadOnlyList<CellSlot>[] BuildRowLayout(IReadOnlyList<TableColumn> columns, IReadOnlyList<TableRow> rows)
+    {
+        var columnCount = columns.Count;
+        var rowLayout = new IReadOnlyList<CellSlot>[rows.Count];
+        var pending = new int[columnCount];
+
+        for (var r = 0; r < rows.Count; r++)
+        {
+            var row = rows[r];
+            var slots = new List<CellSlot>();
+            var cellIndex = 0;
+            var col = 0;
+
+            while (col < columnCount)
+            {
+                if (pending[col] > 0)
+                {
+                    pending[col]--;
+                    col++;
+                    continue;
+                }
+
+                if (cellIndex >= row.Cells.Count)
+                {
+                    throw new ArgumentException(
+                        $"Row {r} supplies {row.Cells.Count} cell(s) but needs at least one more to fill column {col} " +
+                        $"(not covered by a RowSpan from an earlier row) of the table's {columnCount} column(s).",
+                        nameof(rows));
+                }
+
+                var cell = row.Cells[cellIndex];
+                var span = cell.ColSpan;
+                if (col + span > columnCount)
+                {
+                    throw new ArgumentException(
+                        $"Row {r}'s cell {cellIndex} has ColSpan={span} starting at column {col}, which extends past the table's {columnCount} column(s).",
+                        nameof(rows));
+                }
+
+                slots.Add(new CellSlot(cell, col));
+
+                if (cell.RowSpan > 1)
+                {
+                    if (r + cell.RowSpan > rows.Count)
+                    {
+                        throw new ArgumentException(
+                            $"Row {r}'s cell {cellIndex} has RowSpan={cell.RowSpan} starting at row {r}, which extends past the table's {rows.Count} row(s).",
+                            nameof(rows));
+                    }
+
+                    for (var k = 0; k < span; k++)
+                    {
+                        pending[col + k] = cell.RowSpan - 1;
+                    }
+                }
+
+                cellIndex++;
+                col += span;
+            }
+
+            if (cellIndex != row.Cells.Count)
+            {
+                throw new ArgumentException(
+                    $"Row {r} supplies {row.Cells.Count} cell(s) but only {cellIndex} fit within the table's {columnCount} column(s) " +
+                    "after accounting for column spans and columns carried over by a RowSpan from an earlier row.",
+                    nameof(rows));
+            }
+
+            rowLayout[r] = slots;
+        }
+
+        return rowLayout;
+    }
+
+    /// <summary>
+    /// Derives, for each row, the exclusive end of the maximal group of rows
+    /// an active <see cref="TableCell.RowSpan"/> links it to - a plain
+    /// re-derivation from already-known cell placements (no validation), so
+    /// it's just as cheap to run again on a <see cref="Split"/> fragment's
+    /// sliced <see cref="_rowLayout"/> as it would be to thread the original
+    /// table's boundaries through with index translation.
+    /// </summary>
+    private static int[] ComputeGroupBoundaries(IReadOnlyList<CellSlot>[] rowLayout, int columnCount)
+    {
+        var groupEndForRow = new int[rowLayout.Length];
+        var pending = new int[columnCount];
+        var groupStart = 0;
+
+        for (var r = 0; r < rowLayout.Length; r++)
+        {
+            for (var c = 0; c < columnCount; c++)
+            {
+                if (pending[c] > 0) pending[c]--;
+            }
+
+            foreach (var slot in rowLayout[r])
+            {
+                if (slot.Cell.RowSpan > 1)
+                {
+                    for (var k = 0; k < slot.Cell.ColSpan; k++)
+                    {
+                        pending[slot.StartColumn + k] = slot.Cell.RowSpan - 1;
+                    }
+                }
+            }
+
+            if (Array.TrueForAll(pending, p => p == 0))
+            {
+                for (var g = groupStart; g <= r; g++) groupEndForRow[g] = r + 1;
+                groupStart = r + 1;
+            }
+        }
+
+        return groupEndForRow;
     }
 
     private double[] ResolveColumnWidths(double contentWidthPx)
@@ -100,7 +245,24 @@ public sealed class Table : IReportElement
         return widths;
     }
 
-    private TableRow HeaderRow() => new(Columns.Select(c => (TableCell)c.Header).ToList());
+    private IReadOnlyList<CellSlot> HeaderRowSlots() =>
+        Columns.Select((c, i) => new CellSlot(c.Header, i)).ToList();
+
+    private static double SpanWidth(double[] columnWidths, int startColumn, int span)
+    {
+        var total = 0.0;
+        for (var i = 0; i < span; i++) total += columnWidths[startColumn + i];
+        return total;
+    }
+
+    /// <summary>A cell's own box height: its wrapped text height plus <see cref="Styling.TableStyle.CellPaddingPx"/> on top and bottom.</summary>
+    private double MeasureCellBoxHeight(TableCell cell, double widthPx, LayoutContext context, TextStyle defaultStyle)
+    {
+        var style = cell.Style ?? defaultStyle;
+        var usableWidth = Math.Max(1, widthPx - 2 * Style.CellPaddingPx);
+        var measured = context.TextMeasurer.Measure(cell.Text, style.ToFontSpecification(), usableWidth);
+        return measured.TotalHeightPx + 2 * Style.CellPaddingPx;
+    }
 
     /// <summary>
     /// A row's measured height includes one <see cref="Styling.TableStyle.BorderWidthPx"/>
@@ -111,17 +273,17 @@ public sealed class Table : IReportElement
     /// entirely previously under-measured the table, and since the container
     /// <c>RenderHtml</c> wraps it in is <c>overflow:hidden</c> at that
     /// (too-short) height, the last row's bottom border was silently clipped.
+    /// Cells with an active <see cref="TableCell.RowSpan"/> are excluded from
+    /// this per-row max: their height requirement is satisfied by the *sum*
+    /// of the rows they span instead - see the inflation pass in <see cref="GetRowHeights"/>.
     /// </summary>
-    private double MeasureRowHeight(TableRow row, double[] columnWidths, LayoutContext context, TextStyle defaultStyle)
+    private double MeasureRowHeight(IReadOnlyList<CellSlot> cellSlots, double[] columnWidths, LayoutContext context, TextStyle defaultStyle)
     {
         var maxHeight = 0.0;
-        for (var c = 0; c < row.Cells.Count; c++)
+        foreach (var slot in cellSlots)
         {
-            var cell = row.Cells[c];
-            var style = cell.Style ?? defaultStyle;
-            var width = Math.Max(1, columnWidths[c] - 2 * Style.CellPaddingPx);
-            var measured = context.TextMeasurer.Measure(cell.Text, style.ToFontSpecification(), width);
-            var height = measured.TotalHeightPx + 2 * Style.CellPaddingPx;
+            if (slot.Cell.RowSpan > 1) continue;
+            var height = MeasureCellBoxHeight(slot.Cell, SpanWidth(columnWidths, slot.StartColumn, slot.Cell.ColSpan), context, defaultStyle);
             if (height > maxHeight) maxHeight = height;
         }
 
@@ -149,7 +311,34 @@ public sealed class Table : IReportElement
         var heights = new double[Rows.Count];
         for (var i = 0; i < Rows.Count; i++)
         {
-            heights[i] = MeasureRowHeight(Rows[i], columnWidths, context, Style.CellTextStyle);
+            heights[i] = MeasureRowHeight(_rowLayout[i], columnWidths, context, Style.CellTextStyle);
+        }
+
+        // A RowSpan cell's own required height must fit within the sum of the
+        // rows it spans; if the natural heights above don't add up to enough,
+        // add the whole deficit to the last row of its span. This is an
+        // approximation (a real browser may distribute the extra height
+        // differently), consistent with the library's approximate text
+        // measurement elsewhere, but it guarantees the combined box is tall
+        // enough for the cell's content.
+        for (var i = 0; i < Rows.Count; i++)
+        {
+            foreach (var slot in _rowLayout[i])
+            {
+                if (slot.Cell.RowSpan <= 1) continue;
+
+                var spanWidth = SpanWidth(columnWidths, slot.StartColumn, slot.Cell.ColSpan);
+                var required = MeasureCellBoxHeight(slot.Cell, spanWidth, context, Style.CellTextStyle);
+                var lastRow = i + slot.Cell.RowSpan - 1;
+
+                var sum = 0.0;
+                for (var r = i; r <= lastRow; r++) sum += heights[r];
+
+                if (required > sum)
+                {
+                    heights[lastRow] += required - sum;
+                }
+            }
         }
 
         _cachedRowHeights = heights;
@@ -186,7 +375,7 @@ public sealed class Table : IReportElement
         // +1 border width for the table's outermost top edge - every row
         // already counts one border line for its own bottom edge (see
         // MeasureRowHeight), so this is the one edge nothing else accounts for.
-        var total = Style.BorderWidthPx + MeasureRowHeight(HeaderRow(), widths, context, Style.HeaderTextStyle) + ContinuationBannerHeight(widths, context);
+        var total = Style.BorderWidthPx + MeasureRowHeight(HeaderRowSlots(), widths, context, Style.HeaderTextStyle) + ContinuationBannerHeight(widths, context);
         for (var i = 0; i < rowHeights.Length; i++)
         {
             total += rowHeights[i];
@@ -200,7 +389,7 @@ public sealed class Table : IReportElement
     {
         var widths = ResolveColumnWidths(context.ContentWidthPx);
         var rowHeights = GetRowHeights(widths, context);
-        var headerHeight = Style.BorderWidthPx + MeasureRowHeight(HeaderRow(), widths, context, Style.HeaderTextStyle) + ContinuationBannerHeight(widths, context);
+        var headerHeight = Style.BorderWidthPx + MeasureRowHeight(HeaderRowSlots(), widths, context, Style.HeaderTextStyle) + ContinuationBannerHeight(widths, context);
         if (headerHeight >= availableHeightPx)
         {
             return SplitResult.Unsplittable(this);
@@ -209,31 +398,58 @@ public sealed class Table : IReportElement
         var used = headerHeight;
         var headRows = new List<TableRow>();
         var headHeights = new List<double>();
+        var headLayout = new List<IReadOnlyList<CellSlot>>();
         var index = 0;
 
-        for (; index < Rows.Count; index++)
+        while (index < Rows.Count)
         {
-            var rowHeight = rowHeights[index];
-            if (used + rowHeight <= availableHeightPx)
+            // A group of rows linked by an active RowSpan is atomic: it's
+            // added whole or not at all, regardless of RowSplitBehavior.
+            var groupEnd = _groupEndForRow[index];
+            var groupHeight = 0.0;
+            for (var r = index; r < groupEnd; r++) groupHeight += rowHeights[r];
+
+            if (used + groupHeight <= availableHeightPx)
             {
-                headRows.Add(Rows[index]);
-                headHeights.Add(rowHeight);
-                used += rowHeight;
+                for (var r = index; r < groupEnd; r++)
+                {
+                    headRows.Add(Rows[r]);
+                    headHeights.Add(rowHeights[r]);
+                    headLayout.Add(_rowLayout[r]);
+                }
+
+                used += groupHeight;
+                index = groupEnd;
                 continue;
             }
 
-            if (Style.RowSplitBehavior == RowSplitBehavior.AllowSplitWithContinuedHeader &&
-                TrySplitRow(Rows[index], widths, context, availableHeightPx - used, out var rowHead, out var rowTail))
+            // Mid-row line truncation only ever applies to a lone row with no
+            // active rowspan (groupEnd - index == 1) - never inside a
+            // multi-row group, where splitting a spanned cell's content
+            // mid-page isn't well-defined.
+            if (groupEnd - index == 1 &&
+                Style.RowSplitBehavior == RowSplitBehavior.AllowSplitWithContinuedHeader &&
+                TrySplitRow(_rowLayout[index], widths, context, availableHeightPx - used, out var rowHead, out var rowTail))
             {
+                var headSlots = RemapSlots(_rowLayout[index], rowHead);
+                var tailSlots = RemapSlots(_rowLayout[index], rowTail);
+
                 headRows.Add(rowHead);
-                headHeights.Add(MeasureRowHeight(rowHead, widths, context, Style.CellTextStyle));
+                headHeights.Add(MeasureRowHeight(headSlots, widths, context, Style.CellTextStyle));
+                headLayout.Add(headSlots);
 
                 var tailRows = new List<TableRow> { rowTail };
-                var tailHeights = new List<double> { MeasureRowHeight(rowTail, widths, context, Style.CellTextStyle) };
-                tailRows.AddRange(Rows.Skip(index + 1));
-                for (var t = index + 1; t < rowHeights.Length; t++) tailHeights.Add(rowHeights[t]);
+                var tailHeights = new List<double> { MeasureRowHeight(tailSlots, widths, context, Style.CellTextStyle) };
+                var tailLayout = new List<IReadOnlyList<CellSlot>> { tailSlots };
 
-                return BuildSplitResult(headRows, headHeights, tailRows, tailHeights, context.ContentWidthPx);
+                tailRows.AddRange(Rows.Skip(index + 1));
+                for (var t = index + 1; t < rowHeights.Length; t++)
+                {
+                    tailHeights.Add(rowHeights[t]);
+                    tailLayout.Add(_rowLayout[t]);
+                }
+
+                return BuildSplitResult(headRows, headHeights, headLayout.ToArray(), tailRows, tailHeights, tailLayout.ToArray(), context.ContentWidthPx);
             }
 
             break;
@@ -246,31 +462,50 @@ public sealed class Table : IReportElement
 
         var remainingRows = Rows.Skip(index).ToList();
         var remainingHeights = new List<double>();
-        for (var t = index; t < rowHeights.Length; t++) remainingHeights.Add(rowHeights[t]);
+        var remainingLayout = new List<IReadOnlyList<CellSlot>>();
+        for (var t = index; t < rowHeights.Length; t++)
+        {
+            remainingHeights.Add(rowHeights[t]);
+            remainingLayout.Add(_rowLayout[t]);
+        }
 
-        return BuildSplitResult(headRows, headHeights, remainingRows, remainingHeights, context.ContentWidthPx);
+        return BuildSplitResult(headRows, headHeights, headLayout.ToArray(), remainingRows, remainingHeights, remainingLayout.ToArray(), context.ContentWidthPx);
     }
 
     private SplitResult BuildSplitResult(
         List<TableRow> headRows,
         List<double> headRowHeights,
+        IReadOnlyList<CellSlot>[] headLayout,
         List<TableRow> tailRows,
         List<double> tailRowHeights,
+        IReadOnlyList<CellSlot>[] tailLayout,
         double contentWidthPx)
     {
-        var head = new Table(Columns, headRows, Style, IsContinuation, headRowHeights.ToArray(), contentWidthPx);
+        var head = new Table(Columns, headRows, Style, IsContinuation, headRowHeights.ToArray(), contentWidthPx, headLayout);
         if (tailRows.Count == 0) return SplitResult.Partial(head, null);
-        var tail = new Table(Columns, tailRows, Style, isContinuation: true, tailRowHeights.ToArray(), contentWidthPx);
+        var tail = new Table(Columns, tailRows, Style, isContinuation: true, tailRowHeights.ToArray(), contentWidthPx, tailLayout);
         return SplitResult.Partial(head, tail);
     }
 
+    /// <summary>Rebuilds a row's cell-slot list against a freshly split <see cref="TableRow"/>, preserving each cell's original starting column.</summary>
+    private static IReadOnlyList<CellSlot> RemapSlots(IReadOnlyList<CellSlot> original, TableRow newRow)
+    {
+        var slots = new List<CellSlot>(newRow.Cells.Count);
+        for (var i = 0; i < newRow.Cells.Count; i++)
+        {
+            slots.Add(new CellSlot(newRow.Cells[i], original[i].StartColumn));
+        }
+
+        return slots;
+    }
+
     /// <summary>
-    /// Truncates every cell in <paramref name="row"/> to a shared line budget
+    /// Truncates every cell in a lone (non-grouped) row to a shared line budget
     /// derived from <paramref name="remainingHeightPx"/>, so the row's visual
     /// split lines up across columns. Returns false if no line fits, or if no
     /// cell actually needed truncation (i.e. the row would not have overflowed).
     /// </summary>
-    private bool TrySplitRow(TableRow row, double[] widths, LayoutContext context, double remainingHeightPx, out TableRow head, out TableRow tail)
+    private bool TrySplitRow(IReadOnlyList<CellSlot> cellSlots, double[] widths, LayoutContext context, double remainingHeightPx, out TableRow head, out TableRow tail)
     {
         head = null!;
         tail = null!;
@@ -280,14 +515,14 @@ public sealed class Table : IReportElement
         var usableForText = remainingHeightPx - 2 * Style.CellPaddingPx - Style.BorderWidthPx;
         if (usableForText <= 0) return false;
 
-        var measurements = new TextMeasurement[row.Cells.Count];
+        var measurements = new TextMeasurement[cellSlots.Count];
         var maxLineHeight = 0.0;
-        for (var c = 0; c < row.Cells.Count; c++)
+        for (var c = 0; c < cellSlots.Count; c++)
         {
-            var cell = row.Cells[c];
-            var style = cell.Style ?? Style.CellTextStyle;
-            var width = Math.Max(1, widths[c] - 2 * Style.CellPaddingPx);
-            measurements[c] = context.TextMeasurer.Measure(cell.Text, style.ToFontSpecification(), width);
+            var slot = cellSlots[c];
+            var style = slot.Cell.Style ?? Style.CellTextStyle;
+            var width = Math.Max(1, SpanWidth(widths, slot.StartColumn, slot.Cell.ColSpan) - 2 * Style.CellPaddingPx);
+            measurements[c] = context.TextMeasurer.Measure(slot.Cell.Text, style.ToFontSpecification(), width);
             if (measurements[c].LineHeightPx > maxLineHeight) maxLineHeight = measurements[c].LineHeightPx;
         }
 
@@ -301,20 +536,21 @@ public sealed class Table : IReportElement
         var tailCells = new List<TableCell>();
         var splitSomething = false;
 
-        for (var c = 0; c < row.Cells.Count; c++)
+        for (var c = 0; c < cellSlots.Count; c++)
         {
-            var style = row.Cells[c].Style ?? Style.CellTextStyle;
+            var cell = cellSlots[c].Cell;
+            var style = cell.Style ?? Style.CellTextStyle;
             var lines = measurements[c].Lines;
 
             if (lineBudget >= lines.Count)
             {
-                headCells.Add(row.Cells[c]);
-                tailCells.Add(new TableCell(string.Empty, style));
+                headCells.Add(cell);
+                tailCells.Add(new TableCell(string.Empty, style) { ColSpan = cell.ColSpan });
                 continue;
             }
 
-            headCells.Add(new TableCell(string.Join("\n", lines.Take(lineBudget)), style));
-            tailCells.Add(new TableCell(string.Join("\n", lines.Skip(lineBudget)), style));
+            headCells.Add(new TableCell(string.Join("\n", lines.Take(lineBudget)), style) { ColSpan = cell.ColSpan });
+            tailCells.Add(new TableCell(string.Join("\n", lines.Skip(lineBudget)), style) { ColSpan = cell.ColSpan });
             splitSomething = true;
         }
 
@@ -374,7 +610,7 @@ public sealed class Table : IReportElement
             sb.Append("<tr>");
             foreach (var cell in Rows[r].Cells)
             {
-                AppendCell(sb, "td", cell.Text, cell.Style, Style.CellTextStyle, rowBackgroundColor);
+                AppendCell(sb, "td", cell.Text, cell.Style, Style.CellTextStyle, rowBackgroundColor, cell.ColSpan, cell.RowSpan);
             }
 
             sb.Append("</tr>");
@@ -384,10 +620,13 @@ public sealed class Table : IReportElement
         return sb.ToString();
     }
 
-    private void AppendCell(StringBuilder sb, string tag, string text, TextStyle? cellStyleOverride, TextStyle defaultStyle, string backgroundColor)
+    private void AppendCell(StringBuilder sb, string tag, string text, TextStyle? cellStyleOverride, TextStyle defaultStyle, string backgroundColor, int colSpan = 1, int rowSpan = 1)
     {
         var style = cellStyleOverride ?? defaultStyle;
-        sb.Append('<').Append(tag).Append(" style=\"background-color:").Append(CssFormat.Attribute(backgroundColor))
+        sb.Append('<').Append(tag);
+        if (colSpan > 1) sb.Append(" colspan=\"").Append(colSpan).Append('"');
+        if (rowSpan > 1) sb.Append(" rowspan=\"").Append(rowSpan).Append('"');
+        sb.Append(" style=\"background-color:").Append(CssFormat.Attribute(backgroundColor))
           .Append(";color:").Append(CssFormat.Attribute(style.Color))
           .Append(";font-family:").Append(CssFormat.Attribute(style.FontFamily))
           .Append(";font-size:").Append(CssFormat.Px(style.FontSizePx))

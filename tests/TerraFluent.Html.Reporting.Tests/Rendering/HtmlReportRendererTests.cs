@@ -1,6 +1,7 @@
 using System.Globalization;
 using TerraFluent.Html.Reporting.Layout;
 using TerraFluent.Html.Reporting.Model;
+using TerraFluent.Html.Reporting.Model.Elements;
 using TerraFluent.Html.Reporting.Model.Styling;
 using TerraFluent.Html.Reporting.Rendering;
 using TerraFluent.Html.Reporting.Tests.TestHelpers;
@@ -255,6 +256,34 @@ public class HtmlReportRendererTests
 
         Assert.Contains("<table style=\"border-collapse:collapse;table-layout:fixed;\">", html);
         Assert.DoesNotContain("width:100%", html);
+    }
+
+    [Fact]
+    public void RenderDocument_Table_EmitsColSpanAndRowSpanAttributesAndOmitsCoveredCells()
+    {
+        var document = ReportDocument.Create(PageSize.FromPixels(300, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .Content(c => c.AddTable(table =>
+            {
+                table.AddColumns("Category", "Item", "Price");
+                table.AddRow(new TableCell[] { new TableCell("Fruit") { RowSpan = 2 }, "Apple", "$1" });
+                table.AddRow(new TableCell[] { "Banana", "$2" });
+                table.AddRow(new TableCell[] { new TableCell("Total") { ColSpan = 2 }, "$3" });
+            }))
+            .Build();
+
+        var html = HtmlReportRenderer.Default.RenderDocument(Paginate(document));
+
+        Assert.Contains("rowspan=\"2\"", html);
+        Assert.Contains("colspan=\"2\"", html);
+
+        // The row covered by the RowSpan only emits <td> for its own two
+        // cells ("Banana", "$2") - not a third for the column it covers.
+        var bananaRowStart = html.LastIndexOf("<tr>", html.IndexOf("Banana", StringComparison.Ordinal), StringComparison.Ordinal);
+        var bananaRowEnd = html.IndexOf("</tr>", bananaRowStart, StringComparison.Ordinal);
+        var rowHtml = html.Substring(bananaRowStart, bananaRowEnd - bananaRowStart);
+        Assert.Equal(2, CountOccurrences(rowHtml, "<td"));
     }
 
     private static int CountOccurrences(string haystack, string needle)

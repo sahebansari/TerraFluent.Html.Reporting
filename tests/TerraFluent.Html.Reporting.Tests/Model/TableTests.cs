@@ -188,6 +188,158 @@ public class TableTests
         Assert.Contains("3 column", ex.Message);
     }
 
+    [Fact]
+    public void Constructor_RowSpanCell_LetsFollowingRowOmitThatColumn()
+    {
+        var table = new Table(
+            new TableColumn[] { "Category", "Item" },
+            new[]
+            {
+                new TableRow(new TableCell[] { new TableCell("Fruit") { RowSpan = 2 }, "Apple" }),
+                new TableRow(new TableCell[] { "Banana" }), // omits "Category" - covered by the RowSpan above.
+            },
+            NoPaddingStyle(RowSplitBehavior.KeepRowIntact));
+
+        Assert.Equal(2, table.Rows.Count);
+        Assert.Single(table.Rows[1].Cells);
+    }
+
+    [Fact]
+    public void Constructor_ColSpanExtendsPastColumnCount_Throws()
+    {
+        var columns = new TableColumn[] { "A", "B" };
+        var rows = new[] { new TableRow(new TableCell[] { new TableCell("X") { ColSpan = 3 } }) };
+
+        var ex = Assert.Throws<ArgumentException>(() => new Table(columns, rows));
+        Assert.Contains("ColSpan=3", ex.Message);
+    }
+
+    [Fact]
+    public void Constructor_RowSpanExtendsPastRowCount_Throws()
+    {
+        var columns = new TableColumn[] { "A" };
+        var rows = new[] { new TableRow(new TableCell[] { new TableCell("X") { RowSpan = 2 } }) };
+
+        var ex = Assert.Throws<ArgumentException>(() => new Table(columns, rows));
+        Assert.Contains("RowSpan=2", ex.Message);
+    }
+
+    [Fact]
+    public void Measure_ColSpanCell_MeasuresAgainstSummedColumnWidth()
+    {
+        // Two auto-width columns share the 100px content width (50px each,
+        // 5 chars/line). A ColSpan=2 cell instead gets the full 100px
+        // (10 chars/line), so a 10-char word fits on one line rather than
+        // wrapping across two 5-char lines.
+        var table = new Table(
+            new TableColumn[] { "A", "B" },
+            new[] { new TableRow(new TableCell[] { new TableCell(new string('X', 10)) { ColSpan = 2 } }) },
+            NoPaddingStyle(RowSplitBehavior.KeepRowIntact));
+
+        var measurement = table.Measure(Context(100));
+
+        // header (20, single-char cells) + 1 row (20, one line thanks to the
+        // summed colspan width) = 40.
+        Assert.Equal(40, measurement.HeightPx);
+    }
+
+    [Fact]
+    public void Measure_RowSpanCell_InflatesLastRowOfSpanWhenTallerThanNaturalSum()
+    {
+        // The RowSpan=2 cell needs 3 lines (60px); the two rows it spans
+        // would naturally only be 20px each (40px total) based on their
+        // other cells, so the 20px deficit is added to the last row of the span.
+        var tall = new TableCell("A\nB\nC") { RowSpan = 2 };
+        var table = new Table(
+            new TableColumn[] { "Spans", "Other" },
+            new[]
+            {
+                new TableRow(new TableCell[] { tall, "x" }),
+                new TableRow(new TableCell[] { "y" }),
+            },
+            NoPaddingStyle(RowSplitBehavior.KeepRowIntact));
+
+        var measurement = table.Measure(Context());
+
+        // header(20) + row0(20, "x" only - the RowSpan cell is excluded from
+        // the per-row natural max) + row1(20 natural + 20 deficit) = 80.
+        Assert.Equal(80, measurement.HeightPx);
+    }
+
+    [Fact]
+    public void Split_AllowSplitWithContinuedHeader_RowSpanGroupNeverSplitsMidGroup()
+    {
+        var rows = new[]
+        {
+            new TableRow(new TableCell[] { new TableCell("Group") { RowSpan = 2 }, "Row A" }),
+            new TableRow(new TableCell[] { "Row B" }),
+            new TableRow(new TableCell[] { "Solo", "Row C" }),
+        };
+        var table = new Table(new TableColumn[] { "G", "Item" }, rows, NoPaddingStyle(RowSplitBehavior.AllowSplitWithContinuedHeader));
+
+        // header(20) + the 2-row group (20+20=40) = 60 exactly: the group
+        // must be added as a whole, and the unrelated row after it can't
+        // also fit, so it defers to the tail rather than the engine trying
+        // a mid-row split anywhere inside the group.
+        var split = table.Split(60, Context());
+
+        var head = Assert.IsType<Table>(split.Head);
+        Assert.Equal(2, head.Rows.Count);
+        Assert.Equal("Row A", head.Rows[0].Cells[1].Text);
+        Assert.Equal("Row B", head.Rows[1].Cells[0].Text);
+
+        var tail = Assert.IsType<Table>(split.Tail);
+        Assert.Single(tail.Rows);
+        Assert.Equal("Solo", tail.Rows[0].Cells[0].Text);
+    }
+
+    [Fact]
+    public void Split_RowSpanGroupTallerThanEmptyPage_IsUnsplittable()
+    {
+        var rows = new[]
+        {
+            new TableRow(new TableCell[] { new TableCell("Group") { RowSpan = 2 }, "Row A" }),
+            new TableRow(new TableCell[] { "Row B" }),
+        };
+        var table = new Table(new TableColumn[] { "G", "Item" }, rows, NoPaddingStyle(RowSplitBehavior.AllowSplitWithContinuedHeader));
+
+        // header(20) + the group (40) = 60 total; offering only 50 isn't
+        // enough even on an otherwise-empty page, and the group can't
+        // partially split to make up the difference.
+        var split = table.Split(50, Context());
+
+        Assert.Null(split.Head);
+        Assert.Same(table, split.Tail);
+    }
+
+    [Fact]
+    public void Split_AllowSplitWithContinuedHeader_ColSpanCellStillSplitsAtLineBoundaryAndPreservesSpan()
+    {
+        // Two columns share the 100px content width (50px each); a ColSpan=2
+        // cell gets the full 100px (10 chars/line) instead of one column's
+        // 50px, so this text still wraps to exactly 2 lines as in the
+        // single-column case.
+        var cellText = $"{new string('A', 10)} {new string('B', 10)}";
+        var table = new Table(
+            new TableColumn[] { "Col1", "Col2" },
+            new[] { new TableRow(new TableCell[] { new TableCell(cellText) { ColSpan = 2 } }) },
+            NoPaddingStyle(RowSplitBehavior.AllowSplitWithContinuedHeader));
+
+        // header (20) + 1 of the row's 2 lines (20) = 40.
+        var split = table.Split(40, Context());
+
+        var head = Assert.IsType<Table>(split.Head);
+        Assert.Single(head.Rows);
+        Assert.Equal(new string('A', 10), head.Rows[0].Cells[0].Text);
+        Assert.Equal(2, head.Rows[0].Cells[0].ColSpan);
+
+        var tail = Assert.IsType<Table>(split.Tail);
+        Assert.True(tail.IsContinuation);
+        Assert.Single(tail.Rows);
+        Assert.Equal(new string('B', 10), tail.Rows[0].Cells[0].Text);
+        Assert.Equal(2, tail.Rows[0].Cells[0].ColSpan);
+    }
+
     private sealed class FontSizedLineMeasurer : ITextMeasurer
     {
         public TextMeasurement Measure(string text, FontSpecification font, double maxWidthPx)

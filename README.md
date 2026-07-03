@@ -8,6 +8,8 @@ self-contained HTML/CSS that opens in a browser or can be printed to PDF.
 Use it when you want PDF-style report layout without taking a dependency on a
 PDF engine. The library targets `netstandard2.0` and `net10.0`.
 
+[![View Sample Reports](https://img.shields.io/badge/View-Sample%20Reports-2f4858?style=for-the-badge)](https://sahebansari.github.io/TerraFluent.Html.Reporting/SampleReports/index.html)
+
 ## What's New in 1.1.0
 
 - `AddBarcode(value, moduleWidthPx, heightPx, quietZoneModules)` on content,
@@ -17,6 +19,11 @@ PDF engine. The library targets `netstandard2.0` and `net10.0`.
   alignment, margin, and padding modifiers. See
   [Content Elements: Barcode](docs/03-content-elements.md#barcode) and the
   [cookbook recipe](docs/10-cookbook.md#a-barcode-in-the-header-invoice-number).
+- Table cell `ColSpan`/`RowSpan`, for a merged header/summary cell or a
+  category cell grouping several rows. A `RowSpan` group is treated as one
+  atomic unit during pagination - see
+  [Tables: Column and row spans](docs/05-tables.md#column-and-row-spans) and
+  the [cookbook recipe](docs/10-cookbook.md#grouping-rows-with-rowspan).
 
 See [CHANGELOG.md](CHANGELOG.md#110---2026-07-03) for the full release notes.
 
@@ -69,6 +76,8 @@ print or save it as PDF.
 - Natively generated Code 128 barcode images - no external library or web
   service - handy for an invoice number in the header or a tracking number on
   a label.
+- Table cell `ColSpan`/`RowSpan` for merged header/summary cells or grouped
+  categories.
 - Fluent styling for text, margins, padding, alignment, images, rows, and
   tables.
 - Pagination with line-level paragraph splitting, table row splitting, repeated
@@ -90,15 +99,15 @@ document.
 
 ## Samples
 
-Run the sample project to generate twelve HTML reports:
+Run the sample project to generate thirteen HTML reports:
 
 ```shell
 dotnet run --project samples/TerraFluent.Html.Reporting.Sample
 ```
 
 The sample output includes getting started, styling, images, tables, lists,
-page breaks, raw HTML, warnings, invoices, certificates, row layouts, and an
-invoice with a barcode in the header.
+page breaks, raw HTML, warnings, invoices, certificates, row layouts, an
+invoice with a barcode in the header, and a table using column/row spans.
 
 ## Documentation
 

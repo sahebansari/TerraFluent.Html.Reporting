@@ -3,12 +3,12 @@
 All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
 
 ## [1.1.0] - 2026-07-03
 
 ### Added
 - `AddBarcode(value, moduleWidthPx, heightPx, quietZoneModules)` on `ContentBuilder`, `PageSectionBuilder` (header/footer), and `RowColumnBuilder`: generates a Code 128 barcode natively as a PNG `ReportImage` - no external barcode library or web service involved. Returns the same `ImageElementBuilder` as `AddImage`, so it supports `AlignLeft/Center/Right`, `Margin(...)`, and `Padding(...)` like any other image. `value` must be non-empty printable ASCII (32-126); anything else throws `ArgumentException`.
+- `TableCell.ColSpan`/`RowSpan` (both default `1`): a cell can now span multiple columns and/or rows, for merged header/summary cells or a category cell grouping several rows. A row must supply exactly enough cells to account for every column once spans (and any `RowSpan` carried over from an earlier row) are taken into account; a mismatch, or a span extending past the table's last column/row, throws `ArgumentException`. Rows linked by an active `RowSpan` are treated as one atomic group for pagination - they either fit together on a page or move to the next page as a whole, even under `AllowSplitWithContinuedHeader`.
 
 ### Changed
 - Reworked the root and package `README.md` with a clearer quick start, a "What It Supports" summary, and an explicit Code 128 barcode callout.

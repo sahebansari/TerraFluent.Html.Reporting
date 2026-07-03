@@ -116,6 +116,44 @@ trailing whitespace on the first page. See
 [Tables: Row splitting](05-tables.md#row-splitting-rowsplitbehavior). Full
 source: [`TableStylingScenario.cs`](../samples/TerraFluent.Html.Reporting.Sample/Scenarios/TableStylingScenario.cs).
 
+## Grouping Rows with `RowSpan`
+
+A category cell spanning every line item beneath it, plus a `ColSpan`-based
+label on the closing totals row:
+
+```csharp
+c.AddTable(table =>
+{
+    table.AddColumn("Category", widthPx: 110);
+    table.AddColumn("Item");
+    table.AddColumn("Qty", widthPx: 50);
+    table.AddColumn("Price", widthPx: 90);
+
+    table.AddRow(new TableCell[]
+    {
+        new TableCell("Electronics") { RowSpan = 3 },   // spans this row and the next two
+        "Wireless Mouse", "2", "$39.98",
+    });
+    table.AddRow(new TableCell[] { "Mechanical Keyboard", "1", "$89.00" }); // omits "Category" - covered above
+    table.AddRow(new TableCell[] { "USB-C Dock", "1", "$64.50" });
+
+    table.AddRow(new TableCell[]
+    {
+        new TableCell("Grand Total") { ColSpan = 3 },   // spans "Category", "Item", and "Qty"
+        "$193.48",
+    });
+});
+```
+
+A row underneath a `RowSpan` cell must omit a cell for the column(s) it
+covers - the `Table` constructor throws if a row supplies the wrong number of
+cells once spans are accounted for. The rows linked by the `RowSpan` are
+treated as one atomic unit during pagination: they move to the next page
+together if they don't all fit, even under `AllowSplitWithContinuedHeader`.
+See [Tables: Column and row spans](05-tables.md#column-and-row-spans) for the
+full rules. Full source:
+[`TableSpansScenario.cs`](../samples/TerraFluent.Html.Reporting.Sample/Scenarios/TableSpansScenario.cs).
+
 ## A Header and Footer with a Logo Row
 
 A realistic invoice-style header (logo + company name side by side) and

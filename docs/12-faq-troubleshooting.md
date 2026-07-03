@@ -109,7 +109,7 @@ a benign race, not a correctness issue. See
 
 ## Known limitations
 
-As of the 1.0 release:
+As of 1.1.0:
 
 - **Text measurement is approximate by default.** Exact, pixel-perfect
   pagination requires supplying a custom `ITextMeasurer` (see
@@ -119,7 +119,9 @@ As of the 1.0 release:
   only; the library never embeds font files into the generated HTML.
 - **No multi-column page layout** (newspaper-style columns within a single
   page) - content flows in a single column per page.
-- **No cell colspan/rowspan** in tables.
+- **A table `RowSpan` group can't split across a page break** - it either
+  fits together on a page or moves to the next page as a whole; see
+  [Tables: Column and row spans](05-tables.md#column-and-row-spans).
 - **No right-to-left (RTL) text support.**
 - **Rows don't nest, and row columns can't contain a table, list, nested
   row, page break, or raw HTML** - see

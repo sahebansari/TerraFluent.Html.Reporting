@@ -16,6 +16,7 @@ ISampleScenario[] scenarios =
     new SalesInvoiceScenario(),
     new RowLayoutScenario(),
     new InvoiceBarcodeScenario(),
+    new TableSpansScenario(),
 ];
 
 var outputDir = AppContext.BaseDirectory;

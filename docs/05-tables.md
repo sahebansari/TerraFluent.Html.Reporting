@@ -108,6 +108,49 @@ Plain strings implicitly convert to a `TableCell` with no override
 (`Style = null`), which is why `AddRow("a", "b", "c")` works without
 constructing `TableCell` instances yourself.
 
+## Column and row spans
+
+A `TableCell` can occupy more than one column or row via `ColSpan`/`RowSpan`
+(both default `1`), set through object-initializer syntax:
+
+```csharp
+table.AddRow(new TableCell[]
+{
+    new TableCell("Electronics") { RowSpan = 3 },   // spans this row and the next two
+    "Wireless Mouse", "2", "$39.98",
+});
+table.AddRow(new TableCell[] { "Mechanical Keyboard", "1", "$89.00" }); // omits the "Category" column - covered above
+table.AddRow(new TableCell[] { "USB-C Dock", "1", "$64.50" });
+
+table.AddRow(new TableCell[]
+{
+    new TableCell("Grand Total") { ColSpan = 3 },   // spans "Category", "Item", and "Qty"
+    "$193.48",
+});
+```
+
+A row's cells must account for **exactly** every column: a cell covered by an
+earlier row's `RowSpan` is skipped when counting, and a `ColSpan > 1` cell
+counts for that many columns. Supplying too few or too many cells for what's
+left over throws `ArgumentException` from the `Table` constructor, as does a
+`ColSpan`/`RowSpan` that would extend past the table's last column/row.
+
+**Pagination treats a `RowSpan` group as atomic.** Rows linked by an active
+`RowSpan` either fit together on a page or move to the next page as a whole -
+`AllowSplitWithContinuedHeader`'s mid-row line truncation (below) never
+applies inside such a group, only to a lone row with no active rowspan. If a
+group is taller than an entire empty page, it's reported the same way any
+other oversized, unsplittable content is - see
+[Pagination and Layout: `LayoutWarning`](07-pagination-and-layout.md#layoutwarning-when-content-doesnt-fit).
+
+A `RowSpan` cell's own required height is satisfied by the *sum* of the rows
+it spans; if the rows' own content wouldn't naturally add up to enough, the
+shortfall is added to the last row of the span (an approximation, consistent
+with the library's approximate text measurement elsewhere).
+
+See [Cookbook: Grouping rows with `RowSpan`](10-cookbook.md#grouping-rows-with-rowspan)
+for a runnable example.
+
 ## Row splitting (`RowSplitBehavior`)
 
 When a table doesn't entirely fit in the space remaining on a page, the

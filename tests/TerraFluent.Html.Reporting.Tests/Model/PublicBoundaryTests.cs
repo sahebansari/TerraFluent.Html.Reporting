@@ -80,6 +80,15 @@ public sealed class PublicBoundaryTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new ReportList(ListStyle.Numbered, new[] { "A" }) { StartIndex = -1 });
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void TableCell_ColSpanAndRowSpan_RejectZeroAndNegativeValues(int value)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new TableCell("A") { ColSpan = value });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new TableCell("A") { RowSpan = value });
+    }
+
     [Fact]
     public void PublicCollections_AreSnapshotsOfCallerOwnedLists()
     {

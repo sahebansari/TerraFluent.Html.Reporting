@@ -38,6 +38,16 @@ internal static class Guard
     public static double? NonNegative(double? value, string paramName) =>
         value.HasValue ? NonNegative(value.Value, paramName) : null;
 
+    public static int Positive(int value, string paramName)
+    {
+        if (value <= 0)
+        {
+            throw new ArgumentOutOfRangeException(paramName, value, "Value must be greater than zero.");
+        }
+
+        return value;
+    }
+
     public static IReadOnlyList<T> Snapshot<T>(IEnumerable<T> source, string paramName)
     {
         if (source is null) throw new ArgumentNullException(paramName);

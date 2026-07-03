@@ -149,9 +149,10 @@ Model type: [`ReportImage`](../src/TerraFluent.Html.Reporting/Model/Elements/Rep
 
 ## Table
 
-A table with a repeated header row, optional zebra striping, and two
+A table with a repeated header row, optional zebra striping, two
 configurable behaviors for what happens when a row doesn't fit on the
-remaining space of a page.
+remaining space of a page, and cells that can span multiple columns/rows via
+`ColSpan`/`RowSpan`.
 
 ```csharp
 c.AddTable(table =>
@@ -163,7 +164,8 @@ c.AddTable(table =>
 
 Tables are involved enough to warrant their own page - see
 [Tables](05-tables.md) for column width resolution, `TableStyle`, per-cell
-style overrides, and `RowSplitBehavior`.
+style overrides, [column and row spans](05-tables.md#column-and-row-spans),
+and `RowSplitBehavior`.
 
 Model type: [`Table`](../src/TerraFluent.Html.Reporting/Model/Elements/Table.cs).
 
