@@ -52,7 +52,7 @@ jobs:
         run: dotnet pack src/TerraFluent.Html.Reporting/TerraFluent.Html.Reporting.csproj --configuration Release --no-build --output artifacts
 
       - name: Upload package artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nuget-packages
           path: artifacts/*.*nupkg
