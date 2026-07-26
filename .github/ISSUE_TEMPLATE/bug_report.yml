@@ -1,0 +1,59 @@
+name: Bug report
+description: Report incorrect behaviour or output in TerraFluent.Html.Reporting
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a report. Please do **not** use this
+        form for security vulnerabilities — see
+        [SECURITY.md](https://github.com/sahebansari/TerraFluent.Html.Reporting/blob/master/SECURITY.md).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the incorrect behaviour, and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: The smallest piece of code that shows the problem.
+      render: csharp
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: TerraFluent.Html.Reporting version
+      placeholder: e.g. 1.2.0
+    validations:
+      required: true
+
+  - type: input
+    id: tfm
+    attributes:
+      label: Target framework
+      placeholder: e.g. net10.0, net8.0, netstandard2.0, net472
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: e.g. Windows 11, Ubuntu 24.04, macOS 15, Docker
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: >
+        Stack traces, generated output, or screenshots. Attach the produced file
+        if it helps show the problem.

@@ -8,6 +8,13 @@ self-contained HTML/CSS that opens in a browser or can be printed to PDF.
 Use it when you want PDF-style report layout without taking a dependency on a
 PDF engine. The library targets `netstandard2.0` and `net10.0`.
 
+[![NuGet](https://img.shields.io/nuget/v/TerraFluent.Html.Reporting.svg)](https://www.nuget.org/packages/TerraFluent.Html.Reporting)
+[![NuGet downloads](https://img.shields.io/nuget/dt/TerraFluent.Html.Reporting.svg)](https://www.nuget.org/packages/TerraFluent.Html.Reporting)
+[![CI](https://github.com/sahebansari/TerraFluent.Html.Reporting/actions/workflows/ci.yml/badge.svg)](https://github.com/sahebansari/TerraFluent.Html.Reporting/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/sahebansari/TerraFluent.Html.Reporting/blob/master/LICENSE)
+
+📚 **Full documentation, guides, and samples:** 🌐 [https://terrafluent.dev/html/](https://terrafluent.dev/html/)
+
 [![View Sample Reports](https://img.shields.io/badge/View-Sample%20Reports-2f4858?style=for-the-badge)](https://sahebansari.github.io/TerraFluent.Html.Reporting/SampleReports/index.html)
 
 ## What's New in 1.1.1

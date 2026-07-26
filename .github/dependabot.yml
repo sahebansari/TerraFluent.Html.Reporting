@@ -1,0 +1,26 @@
+version: 2
+updates:
+  # Keeps the pinned action versions in .github/workflows current, so security
+  # fixes in the actions themselves get picked up.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+  # The library itself is zero-dependency, so this mostly covers the test and
+  # sample projects plus build-time-only packages.
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "nuget"
