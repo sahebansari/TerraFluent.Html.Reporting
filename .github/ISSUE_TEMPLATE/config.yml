@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://terrafluent.dev/html/
+    about: Guides, API reference, and runnable samples.
+  - name: Question or discussion
+    url: https://github.com/sahebansari/TerraFluent.Html.Reporting/discussions
+    about: Ask a usage question or discuss an idea before filing an issue.
+  - name: Report a security vulnerability
+    url: https://github.com/sahebansari/TerraFluent.Html.Reporting/security/advisories/new
+    about: Report privately. Please do not open a public issue.

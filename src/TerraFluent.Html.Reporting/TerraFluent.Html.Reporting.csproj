@@ -5,6 +5,7 @@
     <RootNamespace>TerraFluent.Html.Reporting</RootNamespace>
     <AssemblyName>TerraFluent.Html.Reporting</AssemblyName>
     <PackageId>TerraFluent.Html.Reporting</PackageId>
+    <Title>TerraFluent.Html.Reporting — Paginated HTML Reporting for .NET</Title>
     <Description>A fluent, zero-dependency .NET library for generating paginated, print-ready HTML reports.</Description>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest a new capability for TerraFluent.Html.Reporting
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: usecase
+    attributes:
+      label: What are you trying to do?
+      description: >
+        Describe the use case, not just the proposed solution. What document or
+        report are you trying to produce, and what currently blocks you?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API (optional)
+      description: If you have a shape in mind, sketch it here.
+      render: csharp
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Workarounds you have tried
+      description: How are you handling this today?
+
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I would be willing to open a pull request for this

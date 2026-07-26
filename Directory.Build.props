@@ -17,7 +17,8 @@
     <PackageTags>html;report;pagination;pdf;fluent;print</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/sahebansari/TerraFluent.Html.Reporting</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/sahebansari/TerraFluent.Html.Reporting</PackageProjectUrl>
+    <PackageProjectUrl>https://terrafluent.dev/html/</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes>https://github.com/sahebansari/TerraFluent.Html.Reporting/blob/master/CHANGELOG.md#111---2026-07-03</PackageReleaseNotes>
 
     <!-- SourceLink: lets consumers step through this library's actual source
