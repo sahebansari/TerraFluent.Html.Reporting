@@ -91,12 +91,9 @@ public sealed class MultiColumnSection : IReportElement
         IReadOnlyList<PendingDiagnostic> pendingDiagnostics)
     {
         Elements = Guard.Snapshot(elements, nameof(elements));
-        foreach (var element in Elements)
+        if (Elements.Any(element => element is MultiColumnSection))
         {
-            if (element is MultiColumnSection)
-            {
-                throw new ArgumentException("A multi-column section cannot contain another multi-column section.", nameof(elements));
-            }
+            throw new ArgumentException("A multi-column section cannot contain another multi-column section.", nameof(elements));
         }
 
         if (columnCount < 2)

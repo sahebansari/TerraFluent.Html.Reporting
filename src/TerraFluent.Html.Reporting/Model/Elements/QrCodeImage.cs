@@ -266,17 +266,17 @@ internal static class QrCodeImage
         var result = new List<byte>(allDataCodewords.Length + maxEc * ecBlocks.Count);
         for (var i = 0; i < maxDc; i++)
         {
-            foreach (var dc in dcBlocks)
+            foreach (var dc in dcBlocks.Where(dc => i < dc.Length))
             {
-                if (i < dc.Length) result.Add((byte)dc[i]);
+                result.Add((byte)dc[i]);
             }
         }
 
         for (var i = 0; i < maxEc; i++)
         {
-            foreach (var ec in ecBlocks)
+            foreach (var ec in ecBlocks.Where(ec => i < ec.Length))
             {
-                if (i < ec.Length) result.Add((byte)ec[i]);
+                result.Add((byte)ec[i]);
             }
         }
 
@@ -408,23 +408,24 @@ internal static class QrCodeImage
             {
                 if (col + c <= -1 || size <= col + c) continue;
 
-                var dark = (r >= 0 && r <= 6 && (c == 0 || c == 6))
-                    || (c >= 0 && c <= 6 && (r == 0 || r == 6))
-                    || (r >= 2 && r <= 4 && c >= 2 && c <= 4);
-                modules[row + r, col + c] = dark;
+                modules[row + r, col + c] = IsFinderPatternDark(r, c);
             }
         }
     }
+
+    /// <summary>A finder pattern's 7x7 ring-and-center-square: its outer border, plus the solid 3x3 center square.</summary>
+    private static bool IsFinderPatternDark(int r, int c) =>
+        (r >= 0 && r <= 6 && (c == 0 || c == 6))
+        || (c >= 0 && c <= 6 && (r == 0 || r == 6))
+        || (r >= 2 && r <= 4 && c >= 2 && c <= 4);
 
     private static void SetupAlignmentPatterns(bool?[,] modules, int version, int size)
     {
         var positions = AlignmentPatternPositions[version - 1];
         foreach (var row in positions)
         {
-            foreach (var col in positions)
+            foreach (var col in positions.Where(col => modules[row, col] is null))
             {
-                if (modules[row, col] is not null) continue;
-
                 for (var r = -2; r <= 2; r++)
                 {
                     for (var c = -2; c <= 2; c++)
@@ -698,9 +699,7 @@ internal static class QrCodeImage
         {
             for (var col = 0; col <= size - 11; col++)
             {
-                if (!modules[row, col + 1] && modules[row, col + 4] && !modules[row, col + 5] && modules[row, col + 6] && !modules[row, col + 9]
-                    && ((modules[row, col] && modules[row, col + 2] && modules[row, col + 3] && !modules[row, col + 7] && !modules[row, col + 8] && !modules[row, col + 10])
-                        || (!modules[row, col] && !modules[row, col + 2] && !modules[row, col + 3] && modules[row, col + 7] && modules[row, col + 8] && modules[row, col + 10])))
+                if (HasFinderLikeRatio(offset => modules[row, col + offset]))
                 {
                     lostPoint += 40;
                 }
@@ -711,9 +710,7 @@ internal static class QrCodeImage
         {
             for (var row = 0; row <= size - 11; row++)
             {
-                if (!modules[row + 1, col] && modules[row + 4, col] && !modules[row + 5, col] && modules[row + 6, col] && !modules[row + 9, col]
-                    && ((modules[row, col] && modules[row + 2, col] && modules[row + 3, col] && !modules[row + 7, col] && !modules[row + 8, col] && !modules[row + 10, col])
-                        || (!modules[row, col] && !modules[row + 2, col] && !modules[row + 3, col] && modules[row + 7, col] && modules[row + 8, col] && modules[row + 10, col])))
+                if (HasFinderLikeRatio(offset => modules[row + offset, col]))
                 {
                     lostPoint += 40;
                 }
@@ -722,6 +719,17 @@ internal static class QrCodeImage
 
         return lostPoint;
     }
+
+    /// <summary>
+    /// Detects the 1:1:3:1:1 dark:light:dark:light:dark ratio pattern (resembling
+    /// a finder pattern, which real scanners can latch onto and misread) starting
+    /// at offset 0 of <paramref name="at"/> - ISO/IEC 18004's third masking
+    /// penalty rule, shared here between its row-wise and column-wise scans.
+    /// </summary>
+    private static bool HasFinderLikeRatio(Func<int, bool> at) =>
+        !at(1) && at(4) && !at(5) && at(6) && !at(9)
+        && ((at(0) && at(2) && at(3) && !at(7) && !at(8) && !at(10))
+            || (!at(0) && !at(2) && !at(3) && at(7) && at(8) && at(10)));
 
     private static int LostPointLevel4(bool[,] modules, int size)
     {
@@ -734,7 +742,7 @@ internal static class QrCodeImage
             }
         }
 
-        var percent = (double)darkCount / (size * size);
+        var percent = darkCount / ((double)size * size);
         var rating = (int)(Math.Abs(percent * 100 - 50) / 5);
         return rating * 10;
     }
