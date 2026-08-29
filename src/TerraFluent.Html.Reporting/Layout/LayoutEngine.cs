@@ -49,10 +49,19 @@ public static class LayoutEngine
         var contentWidthPx = document.PageSize.WidthPx - document.Margins.Left - document.Margins.Right;
         if (contentWidthPx <= 0) throw new InvalidOperationException("Left/right margins leave no horizontal room for content.");
 
-        var context = new LayoutContext(document.TextMeasurer, contentWidthPx);
+        var diagnostics = new LayoutDiagnostics();
+        var context = new LayoutContext(document.TextMeasurer, contentWidthPx, diagnostics, document.StrictLayoutValidation);
 
-        var headerHeightPx = document.Header?.MeasureHeight(context) ?? 0;
-        var footerHeightPx = document.Footer?.MeasureHeight(context) ?? 0;
+        // Header/footer are measured via a separate context with no Diagnostics
+        // wired in: MeasureHeight runs once, before any page exists, and
+        // BuildSectionPlacements re-measures per page purely for placement
+        // geometry - neither call site has a meaningful "which page is this
+        // warning about" answer, so header/footer column-width diagnostics are
+        // out of scope for now (this warning targets content-area tables/rows).
+        var sectionContext = new LayoutContext(document.TextMeasurer, contentWidthPx, diagnostics: null, strictMode: false);
+
+        var headerHeightPx = document.Header?.MeasureHeight(sectionContext) ?? 0;
+        var footerHeightPx = document.Footer?.MeasureHeight(sectionContext) ?? 0;
 
         var contentAreaHeightPx = document.PageSize.HeightPx - document.Margins.Top - document.Margins.Bottom - headerHeightPx - footerHeightPx;
         if (contentAreaHeightPx <= 0) throw new InvalidOperationException("Margins and header/footer leave no vertical room for content.");
@@ -64,11 +73,23 @@ public static class LayoutEngine
         var pageIndex = 0;
         var pending = new LinkedList<IReportElement>(document.ContentElements);
 
+        // Turns buffered diagnostic entries into real warnings, attributed to
+        // the current page and the given element index. Callers only invoke
+        // this for a measurement that is actually being acted upon (placed, or
+        // used as the basis for a force-place) - see LayoutDiagnostics' remarks.
+        void CommitDiagnostics(IReadOnlyList<LayoutDiagnostics.PendingWarning> pendingWarnings, int elementIndex)
+        {
+            foreach (var pendingWarning in pendingWarnings)
+            {
+                warnings.Add(new LayoutWarning(pageIndex, pendingWarning.Message, pendingWarning.Reason, pendingWarning.ElementType, elementIndex));
+            }
+        }
+
         PageLayout BuildPage(int index, List<PlacedElement> contentElements) => new(
             index,
-            BuildSectionPlacements(document.Header, context, PageSectionKind.Header, index),
+            BuildSectionPlacements(document.Header, sectionContext, PageSectionKind.Header, index),
             contentElements,
-            BuildSectionPlacements(document.Footer, context, PageSectionKind.Footer, index));
+            BuildSectionPlacements(document.Footer, sectionContext, PageSectionKind.Footer, index));
 
         void Place(IReportElement element, double heightPx)
         {
@@ -98,10 +119,12 @@ public static class LayoutEngine
             }
 
             var measurement = element.Measure(context);
+            var pendingDiagnostics = diagnostics.DrainPending();
             var remainingPx = contentAreaHeightPx - usedHeightPx;
 
             if (measurement.HeightPx <= remainingPx + Epsilon)
             {
+                CommitDiagnostics(pendingDiagnostics, currentPage.Count);
                 Place(element, measurement.HeightPx);
                 continue;
             }
@@ -112,7 +135,13 @@ public static class LayoutEngine
 
                 if (split.Head is not null)
                 {
-                    Place(split.Head, split.Head.Measure(context).HeightPx);
+                    // This measurement is being used to place split.Head, not
+                    // the pre-split element - pendingDiagnostics (from measuring
+                    // the whole element above) is intentionally dropped in favor
+                    // of whatever the head fragment's own measurement reports.
+                    var headMeasurement = split.Head.Measure(context);
+                    CommitDiagnostics(diagnostics.DrainPending(), currentPage.Count);
+                    Place(split.Head, headMeasurement.HeightPx);
 
                     if (split.Tail is not null)
                     {
@@ -133,14 +162,22 @@ public static class LayoutEngine
             if (usedHeightPx <= Epsilon)
             {
                 // Even a fully empty page can't fit or split this element - force it through so we make progress.
+                CommitDiagnostics(pendingDiagnostics, currentPage.Count);
                 warnings.Add(new LayoutWarning(
                     pageIndex,
-                    $"A {element.GetType().Name} required {measurement.HeightPx:0.#}px but only {contentAreaHeightPx:0.#}px was available on an empty page; it was placed anyway and will overflow visually."));
+                    $"A {element.GetType().Name} required {measurement.HeightPx:0.#}px but only {contentAreaHeightPx:0.#}px was available on an empty page; it was placed anyway and will overflow visually.",
+                    LayoutWarningReason.Overflow,
+                    element.GetType().Name,
+                    currentPage.Count));
                 Place(element, measurement.HeightPx);
                 StartNewPage();
                 continue;
             }
 
+            // Deferring the whole element to a fresh page - pendingDiagnostics
+            // (from the measurement attempt above, which is not what ends up
+            // placed) is intentionally dropped; a fresh Measure call on retry
+            // will report again if the condition still applies.
             StartNewPage();
             pending.AddFirst(element);
         }
@@ -150,7 +187,7 @@ public static class LayoutEngine
             pages.Add(BuildPage(pageIndex, currentPage));
         }
 
-        return new LayoutResult(pages, document.PageSize, document.Margins, warnings);
+        return new LayoutResult(pages, document.PageSize, document.Margins, warnings, document.Title, document.EmbeddedFonts);
     }
 
     private static IReadOnlyList<PlacedElement> BuildSectionPlacements(IPageSection? section, LayoutContext context, PageSectionKind kind, int pageIndex)

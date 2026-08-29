@@ -220,6 +220,93 @@ public class FluentBuilderTests
     }
 
     [Fact]
+    public void AddQrCode_AddsSquarePngImageAndSupportsImageModifiers()
+    {
+        var document = ReportDocument.Create(PageSize.A4)
+            .Content(c => c.AddQrCode("INV-1001", moduleWidthPx: 4, quietZoneModules: 4).AlignRight().MarginBottom(12))
+            .Build();
+
+        var image = Assert.IsType<ReportImage>(Assert.Single(document.ContentElements));
+        Assert.Equal("image/png", image.MimeType);
+        Assert.Equal(image.WidthPx, image.HeightPx);
+        Assert.Equal(TextAlignment.Right, image.Alignment);
+        Assert.Equal(12, image.MarginBottomPx);
+
+        var bytes = image.ImageBytes;
+        Assert.Equal(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, bytes.Take(4).ToArray());
+    }
+
+    [Fact]
+    public void AddQrCode_OnRowColumn_AddsImageToColumn()
+    {
+        var document = ReportDocument.Create(PageSize.A4)
+            .Content(c => c.AddRow(row => row.AddColumn(col => col.AddQrCode("SHIP-42").AlignCenter())))
+            .Build();
+
+        var row = Assert.IsType<Row>(Assert.Single(document.ContentElements));
+        var image = Assert.IsType<ReportImage>(Assert.Single(row.Columns[0].Elements));
+        Assert.Equal(TextAlignment.Center, image.Alignment);
+    }
+
+    [Fact]
+    public void AddQrCode_EmptyValue_Throws()
+    {
+        Assert.ThrowsAny<ArgumentException>(() => new ContentBuilder().AddQrCode(string.Empty));
+    }
+
+    [Fact]
+    public void AddQrCode_NegativeQuietZone_Throws()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ContentBuilder().AddQrCode("X", quietZoneModules: -1));
+    }
+
+    [Fact]
+    public void AddQrCode_SameValueTwice_ProducesIdenticalBytes()
+    {
+        var firstDocument = ReportDocument.Create(PageSize.A4).Content(c => c.AddQrCode("REPEATABLE-42")).Build();
+        var secondDocument = ReportDocument.Create(PageSize.A4).Content(c => c.AddQrCode("REPEATABLE-42")).Build();
+
+        var firstImage = Assert.IsType<ReportImage>(Assert.Single(firstDocument.ContentElements));
+        var secondImage = Assert.IsType<ReportImage>(Assert.Single(secondDocument.ContentElements));
+
+        Assert.Equal(firstImage.ImageBytes, secondImage.ImageBytes);
+    }
+
+    [Fact]
+    public void AddQrCode_DifferentValues_ProduceDifferentBytes()
+    {
+        var firstDocument = ReportDocument.Create(PageSize.A4).Content(c => c.AddQrCode("VALUE-ONE")).Build();
+        var secondDocument = ReportDocument.Create(PageSize.A4).Content(c => c.AddQrCode("VALUE-TWO")).Build();
+
+        var firstImage = Assert.IsType<ReportImage>(Assert.Single(firstDocument.ContentElements));
+        var secondImage = Assert.IsType<ReportImage>(Assert.Single(secondDocument.ContentElements));
+
+        Assert.NotEqual(firstImage.ImageBytes, secondImage.ImageBytes);
+    }
+
+    [Fact]
+    public void AddQrCode_LongerValue_SelectsLargerVersionThanShorterValue()
+    {
+        var shortDocument = ReportDocument.Create(PageSize.A4)
+            .Content(c => c.AddQrCode("short"))
+            .Build();
+        var longDocument = ReportDocument.Create(PageSize.A4)
+            .Content(c => c.AddQrCode(new string('x', 500)))
+            .Build();
+
+        var shortImage = Assert.IsType<ReportImage>(Assert.Single(shortDocument.ContentElements));
+        var longImage = Assert.IsType<ReportImage>(Assert.Single(longDocument.ContentElements));
+
+        Assert.True(longImage.WidthPx > shortImage.WidthPx);
+    }
+
+    [Fact]
+    public void AddQrCode_TooLongForLargestVersion_Throws()
+    {
+        Assert.ThrowsAny<ArgumentException>(() => new ContentBuilder().AddQrCode(new string('x', 5000)));
+    }
+
+    [Fact]
     public void SetMargins_FourValues_MapsToTopRightBottomLeft()
     {
         var document = ReportDocument.Create(PageSize.A4)

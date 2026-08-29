@@ -1,5 +1,6 @@
 using TerraFluent.Html.Reporting.Model;
 using TerraFluent.Html.Reporting.Model.Elements;
+using TerraFluent.Html.Reporting.Model.Styling;
 
 namespace TerraFluent.Html.Reporting.Fluent;
 
@@ -24,5 +25,5 @@ public sealed class RowBuilder
         return new RowColumnHandle(column, c => _columns[index] = c);
     }
 
-    internal Row Build(double columnGapPx, RowVerticalAlignment verticalAlignment) => new(_columns, columnGapPx, verticalAlignment);
+    internal Row Build(double columnGapPx, RowVerticalAlignment verticalAlignment, RowStyle? style) => new(_columns, columnGapPx, verticalAlignment, style);
 }

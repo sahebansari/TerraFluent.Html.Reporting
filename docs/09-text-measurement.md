@@ -89,8 +89,17 @@ today** - this is a documented extension point, not a plug-in registry. The
 intended pattern is a separate companion package (e.g. a hypothetical
 `TerraFluent.Html.Reporting.Measurement.Playwright`) that depends on the core package
 and supplies one, keeping the core package itself free of native/runtime
-dependencies. See [Extending the Library](11-extending.md#a-custom-itextmeasurer)
-for a sketch of what implementing one looks like.
+dependencies.
+
+A working reference implementation of exactly that pattern lives at
+[samples/TerraFluent.Html.Reporting.Sample.PlaywrightMeasurer](../samples/TerraFluent.Html.Reporting.Sample.PlaywrightMeasurer) -
+it measures word widths with a real, headless Chromium instance's Canvas 2D
+`measureText` API rather than `ApproximateTextMeasurer`'s static Helvetica
+table. Its README spells out exactly what it improves on and what it still
+doesn't do (it's closer to a real browser, not a full DOM layout pass) - read
+that before assuming it gives you pixel-exact pagination. See
+[Extending the Library](11-extending.md#a-custom-itextmeasurer) for the
+`ITextMeasurer` contract sketch this sample implements.
 
 ## Where to go next
 

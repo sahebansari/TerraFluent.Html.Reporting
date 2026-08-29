@@ -87,14 +87,15 @@ public sealed class Paragraph : IReportElement
         var width = Math.Max(0, placement.WidthPx - Style.MarginLeftPx - Style.MarginRightPx);
         var height = Math.Max(0, placement.HeightPx - Style.MarginTopPx - Style.MarginBottomPx);
 
-        return "<p style=\"position:absolute;margin:0;box-sizing:border-box;" +
+        return "<p dir=\"" + CssFormat.Direction(Style.Direction) + "\" style=\"position:absolute;margin:0;box-sizing:border-box;" +
             "left:" + CssFormat.Px(left) + ";top:" + CssFormat.Px(top) +
             ";width:" + CssFormat.Px(width) + ";height:" + CssFormat.Px(height) +
             ";padding:" + CssFormat.Box(Style.PaddingTopPx, Style.PaddingRightPx, Style.PaddingBottomPx, Style.PaddingLeftPx) +
             ";font-family:" + CssFormat.Attribute(Style.FontFamily) + ";font-size:" + CssFormat.Px(Style.FontSizePx) +
             ";font-weight:" + CssFormat.FontWeightCss(Style.FontWeight) + ";font-style:" + CssFormat.FontStyleCss(Style.FontStyle) +
             ";color:" + CssFormat.Attribute(Style.Color) + ";line-height:" + CssFormat.Number(Style.LineHeightMultiplier) +
-            ";text-align:" + CssFormat.TextAlign(Style.Alignment) + ";white-space:pre-wrap;\">" +
+            ";text-align:" + CssFormat.TextAlign(Style.Alignment) + ";direction:" + CssFormat.Direction(Style.Direction) +
+            ";white-space:pre-wrap;\">" +
             CssFormat.Encode(Text) + "</p>";
     }
 }

@@ -61,6 +61,13 @@ public sealed class TableStyle
     public string ContinuedHeaderSuffix { get; init; } = " (continued)";
 
     /// <summary>
+    /// How this table reacts when an auto-width column resolves to 0px. Also
+    /// throws (regardless of this setting) when the document itself opts into
+    /// strict layout validation via <c>ReportDocumentBuilder.UseStrictLayoutValidation</c>.
+    /// </summary>
+    public ColumnWidthOverflowMode ColumnWidthOverflowMode { get; init; } = ColumnWidthOverflowMode.Warn;
+
+    /// <summary>
     /// Returns a copy of this style with the given properties overridden, leaving
     /// all others unchanged.
     /// </summary>
@@ -75,7 +82,8 @@ public sealed class TableStyle
         string? borderColor = null,
         double? borderWidthPx = null,
         RowSplitBehavior? rowSplitBehavior = null,
-        string? continuedHeaderSuffix = null) => new()
+        string? continuedHeaderSuffix = null,
+        ColumnWidthOverflowMode? columnWidthOverflowMode = null) => new()
     {
         HeaderTextStyle = headerTextStyle ?? HeaderTextStyle,
         CellTextStyle = cellTextStyle ?? CellTextStyle,
@@ -88,5 +96,6 @@ public sealed class TableStyle
         BorderWidthPx = borderWidthPx ?? BorderWidthPx,
         RowSplitBehavior = rowSplitBehavior ?? RowSplitBehavior,
         ContinuedHeaderSuffix = continuedHeaderSuffix ?? ContinuedHeaderSuffix,
+        ColumnWidthOverflowMode = columnWidthOverflowMode ?? ColumnWidthOverflowMode,
     };
 }

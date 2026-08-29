@@ -83,8 +83,11 @@ exposes a smaller method set than `ContentBuilder` - no `AddRow`, `AddTable`,
 `AddList`, `AddPageBreak`, or `AddRawHtml`. See the comparison table in
 [Content Elements](03-content-elements.md#three-different-builders-three-different-method-sets).
 If you need a table or list inside what's visually a row-like layout,
-consider `AddRawHtml` with a manually computed height, or restructure the
-content to avoid the nesting.
+consider `AddColumns` instead (a `MultiColumnSection` column *can* hold a
+table or list, unlike a `Row` column), `AddRawHtml` with a manually computed
+height, or restructure the content to avoid the nesting. See
+[Supported Composition Patterns](15-composition-patterns.md) for the full
+picture across `Row`, `Table`, and `AddColumns`.
 
 ## Why does `RawHtml`/`Spacer` need an explicit height?
 
@@ -109,27 +112,40 @@ a benign race, not a correctness issue. See
 
 ## Known limitations
 
-As of 1.1.1:
+As of this release:
 
 - **Text measurement is approximate by default.** Exact, pixel-perfect
   pagination requires supplying a custom `ITextMeasurer` (see
-  [Text Measurement](09-text-measurement.md)) - none ships in the core
-  package today.
-- **No custom font embedding.** Fonts are referenced by CSS `font-family`
-  only; the library never embeds font files into the generated HTML.
-- **No multi-column page layout** (newspaper-style columns within a single
-  page) - content flows in a single column per page.
+  [Text Measurement](09-text-measurement.md)) - none ships in the *core*
+  package, though a reference Playwright-backed sample measurer exists at
+  [samples/TerraFluent.Html.Reporting.Sample.PlaywrightMeasurer](../samples/TerraFluent.Html.Reporting.Sample.PlaywrightMeasurer).
+- **Custom font embedding exists but is a manual data-URI embed, not a font
+  subsystem** - `ReportDocumentBuilder.EmbedFont(...)` embeds a font file as
+  a base64 `@font-face` rule; there's no font discovery, subsetting, or
+  fallback-stack management beyond what you configure yourself.
+- **Multi-column page layout (`AddColumns`) is conservative by design** -
+  equal-width columns only, fill-then-wrap (no balanced/equal-height
+  rebalancing), no column-spanning elements, and it can't nest inside
+  itself or inside a `Row` - see
+  [Rows and Columns: Multi-column sections](06-rows-and-columns.md#multi-column-sections-addcolumns).
 - **A table `RowSpan` group can't split across a page break** - it either
   fits together on a page or moves to the next page as a whole; see
   [Tables: Column and row spans](05-tables.md#column-and-row-spans).
-- **No right-to-left (RTL) text support.**
+- **Right-to-left (RTL) text support covers `dir`/`direction` only** -
+  `TextStyle.Direction` is independent of `TextAlignment`/margin/padding,
+  which stay physical (`Left`/`Right`), not logical (`Start`/`End`) - see
+  [Styling: Text direction](04-styling.md#text-direction) for what to set
+  explicitly for a fully mirrored layout.
 - **Rows don't nest, and row columns can't contain a table, list, nested
   row, page break, or raw HTML** - see
-  [section Can I nest a row inside a row?](#can-i-nest-a-row-inside-a-row-or-a-table-inside-a-row-column)
-  above.
+  [Supported Composition Patterns](15-composition-patterns.md) for the
+  full picture (including what `AddColumns` columns *can* hold instead).
 - **No shrink-to-fit for table/row columns** when fixed-width columns
-  already exceed the available width - auto columns are pinned to `0`
-  rather than the table/row overflowing or warning about it.
+  already exceed the available width - auto columns are pinned to `0`.
+  This is no longer silent: it records a `LayoutWarning`
+  (`LayoutWarningReason.ColumnWidthCollapsed`), and you can opt into
+  throwing instead via `TableStyle`/`RowStyle`'s `ColumnWidthOverflowMode`
+  or document-wide via `ReportDocumentBuilder.UseStrictLayoutValidation()`.
 
 Check [CHANGELOG.md](../CHANGELOG.md) for what's changed most recently.
 

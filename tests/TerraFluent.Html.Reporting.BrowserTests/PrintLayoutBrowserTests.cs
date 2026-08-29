@@ -1,5 +1,6 @@
 using Microsoft.Playwright;
 using TerraFluent.Html.Reporting.Model;
+using TerraFluent.Html.Reporting.Model.Styling;
 using Xunit;
 
 namespace TerraFluent.Html.Reporting.BrowserTests;
@@ -76,6 +77,61 @@ public sealed class PrintLayoutBrowserTests
         Assert.Equal("0px", audit.PrintMarginBottom);
         Assert.Equal("none", audit.PrintBoxShadow);
         Assert.True(audit.HasPageRule);
+    }
+
+    [Fact]
+    public async Task GeneratedReport_RtlTextStyle_IsRecognizedAsRtlByARealBrowser()
+    {
+        var rtlStyle = TextStyle.Default.With(direction: TextDirection.Rtl);
+        var report = ReportDocument.Create(PageSize.FromPixels(300, 200))
+            .SetMargins(20)
+            .Content(content =>
+            {
+                content.AddParagraph("Left to right", TextStyle.Default).MarginBottom(4);
+                content.AddParagraph("مرحبا بالعالم", rtlStyle);
+            })
+            .Build();
+
+        using var playwright = await Playwright.CreateAsync();
+        await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
+        var page = await browser.NewPageAsync();
+        await page.SetContentAsync(report.RenderHtml(), new PageSetContentOptions { WaitUntil = WaitUntilState.Load });
+
+        var directions = await page.EvaluateAsync<string[]>("""
+            () => [...document.querySelectorAll('p')].map(p => getComputedStyle(p).direction + '|' + p.getAttribute('dir'))
+            """);
+
+        Assert.Equal(2, directions.Length);
+        Assert.Equal("ltr|ltr", directions[0]);
+        Assert.Equal("rtl|rtl", directions[1]);
+    }
+
+    [Fact]
+    public async Task GeneratedReport_EmbeddedFont_IsRegisteredInDocumentFontsWithDeclaredWeightAndStyle()
+    {
+        // The bytes below are not a valid font binary - this test verifies the
+        // generated @font-face CSS itself parses correctly and is registered
+        // by a real browser with the declared family/weight/style; it does
+        // not exercise actual glyph rendering, which would require a real font asset.
+        var report = ReportDocument.Create(PageSize.FromPixels(300, 200))
+            .SetMargins(20)
+            .EmbedFont("MyEmbeddedTestFont", new byte[] { 1, 2, 3, 4 }, FontWeight.Bold, FontStyle.Italic)
+            .Content(content => content.AddParagraph("Test", TextStyle.Default.With(fontFamily: "MyEmbeddedTestFont")))
+            .Build();
+
+        using var playwright = await Playwright.CreateAsync();
+        await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
+        var page = await browser.NewPageAsync();
+        await page.SetContentAsync(report.RenderHtml(), new PageSetContentOptions { WaitUntil = WaitUntilState.Load });
+
+        var registered = await page.EvaluateAsync<bool>("""
+            () => [...document.fonts].some(f =>
+                f.family.replace(/^"|"$/g, '') === 'MyEmbeddedTestFont' &&
+                f.weight === 'bold' &&
+                f.style === 'italic')
+            """);
+
+        Assert.True(registered, "Expected the embedded font to be registered in document.fonts with the declared family/weight/style.");
     }
 
     private sealed class PrintLayoutAudit

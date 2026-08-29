@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\TerraFluent.Html.Reporting\TerraFluent.Html.Reporting.csproj" />
+    <ProjectReference Include="..\..\samples\TerraFluent.Html.Reporting.Sample.PlaywrightMeasurer\TerraFluent.Html.Reporting.Sample.PlaywrightMeasurer.csproj" />
   </ItemGroup>
 
 </Project>

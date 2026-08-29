@@ -51,6 +51,9 @@ public sealed class TextStyle
     /// <summary>Horizontal alignment of the text within its containing block.</summary>
     public TextAlignment Alignment { get; init; } = TextAlignment.Left;
 
+    /// <summary>Text direction - see <see cref="Model.TextDirection"/> for how this relates to <see cref="Alignment"/>.</summary>
+    public TextDirection Direction { get; init; } = TextDirection.Ltr;
+
     /// <summary>Space, in pixels, above the element.</summary>
     public double MarginTopPx
     {
@@ -135,7 +138,8 @@ public sealed class TextStyle
         double? paddingTopPx = null,
         double? paddingRightPx = null,
         double? paddingBottomPx = null,
-        double? paddingLeftPx = null) => new()
+        double? paddingLeftPx = null,
+        TextDirection? direction = null) => new()
     {
         FontFamily = fontFamily ?? FontFamily,
         FontSizePx = fontSizePx ?? FontSizePx,
@@ -152,6 +156,7 @@ public sealed class TextStyle
         PaddingRightPx = paddingRightPx ?? PaddingRightPx,
         PaddingBottomPx = paddingBottomPx ?? PaddingBottomPx,
         PaddingLeftPx = paddingLeftPx ?? PaddingLeftPx,
+        Direction = direction ?? Direction,
     };
 
     /// <summary>The built-in font size/weight scale used for <see cref="Elements.Heading"/> levels H1-H6.</summary>

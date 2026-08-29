@@ -16,6 +16,7 @@ used when an element doesn't specify one:
 | `Color` | `"#222222"` | Any CSS color string. |
 | `LineHeightMultiplier` | `1.4` | Resolved line height = `FontSizePx * LineHeightMultiplier`; see `LineHeightPx`. |
 | `Alignment` | `TextAlignment.Left` | `Left`, `Center`, `Right`, or `Justify`. |
+| `Direction` | `TextDirection.Ltr` | `Ltr` or `Rtl` - see [Text direction](#text-direction) below. |
 | `MarginTopPx`/`MarginRightPx`/`MarginBottomPx`/`MarginLeftPx` | `0`/`0`/`8`/`0` | See [Margin vs. padding](#margin-vs-padding) below. |
 | `PaddingTopPx`/`PaddingRightPx`/`PaddingBottomPx`/`PaddingLeftPx` | `0` each | See [Margin vs. padding](#margin-vs-padding) below. |
 
@@ -163,10 +164,10 @@ how column width and vertical alignment interact with these.
 
 Every color in this library is a plain CSS color string passed straight
 through to inline styles - there's no validation, palette, or theme system.
-Likewise, `FontFamily` is an opaque CSS font-family list: the library doesn't
-ship or embed any fonts, so whatever you specify must be available in
-whichever browser/engine ultimately renders the HTML (or it falls back per
-normal CSS font-family rules).
+Likewise, `FontFamily` is an opaque CSS font-family list: unless you embed
+one yourself (see below), the library doesn't ship any fonts, so whatever
+you specify must be available in whichever browser/engine ultimately
+renders the HTML (or it falls back per normal CSS font-family rules).
 
 This also matters for *pagination accuracy*: the bundled `ApproximateTextMeasurer`
 estimates wrapping using a single generic sans-serif metrics table regardless
@@ -174,6 +175,48 @@ of which `FontFamily` you set - changing fonts changes how the text looks but
 not how the engine predicts it wraps. See
 [Text Measurement](09-text-measurement.md) for what this means in practice
 and how to get pixel-exact pagination if you need it.
+
+## Embedding custom fonts
+
+`ReportDocumentBuilder.EmbedFont(fontFamily, fontBytesOrFilePath, weight, style, mimeType)`
+embeds a font file directly into the generated HTML as a base64 data URI
+`@font-face` rule, so the report no longer depends on that font being
+installed wherever the HTML is opened or printed:
+
+```csharp
+ReportDocument.Create(PageSize.A4)
+    .EmbedFont("Brand Sans", "fonts/brand-sans.woff2")
+    .EmbedFont("Brand Sans", "fonts/brand-sans-bold.woff2", weight: FontWeight.Bold)
+    .Content(c => c.AddParagraph("Styled text", TextStyle.Default.With(fontFamily: "Brand Sans")))
+    .Build();
+```
+
+Call it once per weight/style combination you actually use (a normal
+weight and a bold weight are two separate font files, so two separate
+`EmbedFont` calls) - `TextStyle.FontFamily`/`FontWeight`/`FontStyle` don't
+know which embedded fonts exist, they just emit the matching CSS, and the
+browser resolves which `@font-face` rule (if any) applies the same way it
+always resolves font matching. Embedding adds the font's full file size
+(base64-encoded, so ~33% larger) to every generated report - reasonable for
+a small brand font, worth measuring for a large font family with many
+weights.
+
+## Text direction
+
+`TextStyle.Direction` (`TextDirection.Ltr`, the default, or `.Rtl`) sets
+both the HTML `dir` attribute and the CSS `direction` property on
+paragraphs, headings, lists, and table cells:
+
+```csharp
+var rtl = TextStyle.Default.With(direction: TextDirection.Rtl);
+content.AddParagraph("مرحبا بالعالم", rtl);
+```
+
+**This is independent of `Alignment`.** Setting `Rtl` does not itself
+change `TextAlignment.Left`/`.Right` to a "logical" start/end - margin,
+padding, and alignment on `TextStyle` remain physical properties (plain CSS
+`left`/`right`, not logical `start`/`end`). For a fully mirrored right-to-left
+block, set `Alignment: TextAlignment.Right` explicitly alongside `Direction: TextDirection.Rtl`.
 
 ## Where to go next
 

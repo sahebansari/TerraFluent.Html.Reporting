@@ -24,6 +24,7 @@ internal sealed class GettingStartedScenario : ISampleScenario
 
         return ReportDocument.Create(PageSize.A4, PageOrientation.Portrait)
             .SetMargins(40, 40, 60, 60)
+            .Title("Monthly Sales Report")
             .Header(h => h.AddText("Monthly Sales Report").AlignCenter().Bold().FontSize(16))
             .Footer(f => f.AddPageNumber("Page {page} of {totalPages}").AlignCenter())
             .Content(c =>

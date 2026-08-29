@@ -165,8 +165,186 @@ public class LayoutEngineTests
         var result = LayoutEngine.Paginate(document);
 
         Assert.Single(result.Pages);
-        Assert.Single(result.Warnings);
-        Assert.Equal(0, result.Warnings[0].PageIndex);
+        var warning = Assert.Single(result.Warnings);
+        Assert.Equal(0, warning.PageIndex);
+        Assert.Equal(LayoutWarningReason.Overflow, warning.Reason);
+        Assert.Equal(nameof(ReportImage), warning.ElementType);
+        Assert.Equal(0, warning.ElementIndex);
+    }
+
+    [Fact]
+    public void Paginate_TableAutoColumnWidthCollapsesToZero_RecordsColumnWidthCollapsedWarning()
+    {
+        // Content width is 100px; the 150px fixed column alone already exceeds
+        // it, so the one auto-width column has nothing left and collapses to 0px.
+        var document = ReportDocument.Create(PageSize.FromPixels(100, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .Content(c => c.AddTable(table =>
+            {
+                table.AddColumn("Fixed", widthPx: 150);
+                table.AddColumn("Auto");
+                table.AddRow("A", "B");
+            }))
+            .Build();
+
+        var result = LayoutEngine.Paginate(document);
+
+        var warning = Assert.Single(result.Warnings);
+        Assert.Equal(LayoutWarningReason.ColumnWidthCollapsed, warning.Reason);
+        Assert.Equal(nameof(Table), warning.ElementType);
+        Assert.Equal(0, warning.PageIndex);
+        Assert.Equal(0, warning.ElementIndex);
+    }
+
+    [Fact]
+    public void Paginate_RowAutoColumnWidthCollapsesToZero_RecordsColumnWidthCollapsedWarning()
+    {
+        // Content width is 100px; a 150px fixed column alone already exceeds
+        // it (even before the column gap), so the auto-width column collapses to 0px.
+        var document = ReportDocument.Create(PageSize.FromPixels(100, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .Content(c => c.AddRow(row =>
+            {
+                row.AddColumn(150, col => col.AddText("Fixed"));
+                row.AddColumn(col => col.AddText("Auto"));
+            }))
+            .Build();
+
+        var result = LayoutEngine.Paginate(document);
+
+        var warning = Assert.Single(result.Warnings);
+        Assert.Equal(LayoutWarningReason.ColumnWidthCollapsed, warning.Reason);
+        Assert.Equal(nameof(Row), warning.ElementType);
+        Assert.Equal(0, warning.PageIndex);
+        Assert.Equal(0, warning.ElementIndex);
+    }
+
+    [Fact]
+    public void Paginate_TableColumnWidthCollapse_DocumentLevelStrictMode_ThrowsInsteadOfWarning()
+    {
+        var document = ReportDocument.Create(PageSize.FromPixels(100, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .UseStrictLayoutValidation()
+            .Content(c => c.AddTable(table =>
+            {
+                table.AddColumn("Fixed", widthPx: 150);
+                table.AddColumn("Auto");
+                table.AddRow("A", "B");
+            }))
+            .Build();
+
+        var ex = Assert.Throws<InvalidOperationException>(() => LayoutEngine.Paginate(document));
+        Assert.Contains("auto-width column", ex.Message);
+    }
+
+    [Fact]
+    public void Paginate_TableColumnWidthCollapse_PerTableStrictMode_ThrowsEvenWithoutDocumentLevelStrictMode()
+    {
+        var document = ReportDocument.Create(PageSize.FromPixels(100, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .Content(c => c.AddTable(
+                table =>
+                {
+                    table.AddColumn("Fixed", widthPx: 150);
+                    table.AddColumn("Auto");
+                    table.AddRow("A", "B");
+                },
+                TableStyle.Default.With(columnWidthOverflowMode: ColumnWidthOverflowMode.Throw)))
+            .Build();
+
+        Assert.Throws<InvalidOperationException>(() => LayoutEngine.Paginate(document));
+    }
+
+    [Fact]
+    public void Paginate_RowColumnWidthCollapse_DocumentLevelStrictMode_ThrowsInsteadOfWarning()
+    {
+        var document = ReportDocument.Create(PageSize.FromPixels(100, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .UseStrictLayoutValidation()
+            .Content(c => c.AddRow(row =>
+            {
+                row.AddColumn(150, col => col.AddText("Fixed"));
+                row.AddColumn(col => col.AddText("Auto"));
+            }))
+            .Build();
+
+        Assert.Throws<InvalidOperationException>(() => LayoutEngine.Paginate(document));
+    }
+
+    [Fact]
+    public void Paginate_RowColumnWidthCollapse_PerRowStrictMode_ThrowsEvenWithoutDocumentLevelStrictMode()
+    {
+        var document = ReportDocument.Create(PageSize.FromPixels(100, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .Content(c => c.AddRow(
+                row =>
+                {
+                    row.AddColumn(150, col => col.AddText("Fixed"));
+                    row.AddColumn(col => col.AddText("Auto"));
+                },
+                style: RowStyle.Default.With(columnWidthOverflowMode: ColumnWidthOverflowMode.Throw)))
+            .Build();
+
+        Assert.Throws<InvalidOperationException>(() => LayoutEngine.Paginate(document));
+    }
+
+    [Fact]
+    public void Paginate_OversizedImageInsideMultiColumnSection_ForcePlacesAndRecordsWarning()
+    {
+        // Content area is 40px tall; an 80px-tall image inside a 2-column
+        // section can't fit even an empty column.
+        var document = ReportDocument.Create(PageSize.FromPixels(400, 40))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .Content(c => c.AddColumns(2, columns => columns.AddImage(new byte[] { 1 }, "image/png", widthPx: 10, heightPx: 80)))
+            .Build();
+
+        var result = LayoutEngine.Paginate(document);
+
+        Assert.Single(result.Pages);
+        var warning = Assert.Single(result.Warnings);
+        Assert.Equal(LayoutWarningReason.Overflow, warning.Reason);
+        Assert.Equal(nameof(MultiColumnSection), warning.ElementType);
+        Assert.Contains("empty column", warning.Message);
+    }
+
+    [Fact]
+    public void Paginate_MultiColumnSectionTallerThanOnePage_SplitsAndTailResumesAtColumnZeroOnNextPage()
+    {
+        // Content area is 40px tall (2 lines); 6 single-word (never-wrapped)
+        // paragraphs in 2 columns need 3 lines per column (60px) - too tall
+        // for one page, so it must split, continuing on a second page.
+        var document = ReportDocument.Create(PageSize.FromPixels(400, 40))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .Content(c => c.AddColumns(2, columns =>
+            {
+                for (var i = 1; i <= 6; i++)
+                {
+                    columns.AddParagraph($"Item{i}", TextStyle.Default.With(marginBottomPx: 0));
+                }
+            }))
+            .Build();
+
+        var result = LayoutEngine.Paginate(document);
+
+        Assert.Equal(2, result.Pages.Count);
+        Assert.Empty(result.Warnings);
+
+        var page1Section = Assert.IsType<MultiColumnSection>(Assert.Single(result.Pages[0].ContentElements).Element);
+        var page2Section = Assert.IsType<MultiColumnSection>(Assert.Single(result.Pages[1].ContentElements).Element);
+
+        // Page 1: 2 columns * 2 lines (40px) each = 4 items placed.
+        Assert.Equal(4, page1Section.Elements.Count);
+        // Page 2's section is the tail, resuming fresh at column 0 with the 2 leftover items.
+        Assert.Equal(2, page2Section.Elements.Count);
+        Assert.Equal("Item5", ((Paragraph)page2Section.Elements[0]).Text);
     }
 
     [Fact]

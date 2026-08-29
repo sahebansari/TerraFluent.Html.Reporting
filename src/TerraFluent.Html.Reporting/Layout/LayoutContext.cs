@@ -19,13 +19,37 @@ public sealed class LayoutContext
     /// <summary>The width, in pixels, available to the element being measured/split.</summary>
     public double ContentWidthPx { get; }
 
+    /// <summary>
+    /// The buffer <see cref="LayoutEngine"/> collects non-fatal diagnostics
+    /// into (e.g. a collapsed auto-width column), or <see langword="null"/>
+    /// for a <see cref="LayoutContext"/> not wired up for diagnostics (e.g.
+    /// one built directly via the public constructor). Internal: elements
+    /// report through it, but it is not part of the public surface.
+    /// </summary>
+    internal LayoutDiagnostics? Diagnostics { get; }
+
+    /// <summary>
+    /// When true, a condition that would otherwise only produce a
+    /// <see cref="LayoutWarning"/> (via <see cref="Diagnostics"/>) throws
+    /// instead. Defaults to <see langword="false"/>; there is no public
+    /// opt-in for this yet.
+    /// </summary>
+    internal bool StrictMode { get; }
+
     /// <summary>Creates a layout context.</summary>
     public LayoutContext(ITextMeasurer textMeasurer, double contentWidthPx)
+        : this(textMeasurer, contentWidthPx, diagnostics: null, strictMode: false)
+    {
+    }
+
+    internal LayoutContext(ITextMeasurer textMeasurer, double contentWidthPx, LayoutDiagnostics? diagnostics, bool strictMode)
     {
         TextMeasurer = textMeasurer ?? throw new ArgumentNullException(nameof(textMeasurer));
         ContentWidthPx = Guard.Positive(contentWidthPx, nameof(contentWidthPx));
+        Diagnostics = diagnostics;
+        StrictMode = strictMode;
     }
 
     /// <summary>Returns a copy of this context narrowed/widened to <paramref name="contentWidthPx"/>.</summary>
-    public LayoutContext WithContentWidth(double contentWidthPx) => new(TextMeasurer, contentWidthPx);
+    public LayoutContext WithContentWidth(double contentWidthPx) => new(TextMeasurer, contentWidthPx, Diagnostics, StrictMode);
 }

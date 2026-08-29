@@ -20,6 +20,7 @@ internal sealed class SalesInvoiceScenario : ISampleScenario
 
         return ReportDocument.Create(PageSize.A4)
             .SetMargins(40)
+            .Title("Invoice INV-1042 - Acme Corporation")
             .Header(h =>
             {
                 h.AddRow(row =>

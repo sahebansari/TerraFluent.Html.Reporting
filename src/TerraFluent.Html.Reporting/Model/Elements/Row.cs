@@ -1,6 +1,7 @@
 using System.Text;
 using TerraFluent.Html.Reporting.Compatibility;
 using TerraFluent.Html.Reporting.Layout;
+using TerraFluent.Html.Reporting.Model.Styling;
 using TerraFluent.Html.Reporting.Rendering;
 
 namespace TerraFluent.Html.Reporting.Model.Elements;
@@ -27,6 +28,9 @@ public sealed class Row : IReportElement
 
     /// <summary>How each column's content is positioned vertically when shorter than the row's tallest column.</summary>
     public RowVerticalAlignment VerticalAlignment { get; }
+
+    /// <summary>The row's behavioral style - see <see cref="RowStyle"/>.</summary>
+    public RowStyle Style { get; }
 
     /// <summary>Space above the row, in pixels.</summary>
     public double MarginTopPx
@@ -67,24 +71,25 @@ public sealed class Row : IReportElement
     private double _cachedForContentWidthPx = double.NaN;
 
     /// <summary>Creates a row.</summary>
-    public Row(IReadOnlyList<RowColumn> columns, double columnGapPx = 12, RowVerticalAlignment verticalAlignment = RowVerticalAlignment.Middle)
+    public Row(IReadOnlyList<RowColumn> columns, double columnGapPx = 12, RowVerticalAlignment verticalAlignment = RowVerticalAlignment.Middle, RowStyle? style = null)
     {
         Columns = Guard.Snapshot(columns, nameof(columns));
         if (Columns.Count == 0) throw new ArgumentException("A row must have at least one column.", nameof(columns));
         ColumnGapPx = Guard.NonNegative(columnGapPx, nameof(columnGapPx));
         VerticalAlignment = verticalAlignment;
+        Style = style ?? RowStyle.Default;
     }
 
     /// <summary>
     /// Returns a copy of this row with the given margin overridden, leaving its
-    /// columns, column gap, and vertical alignment unchanged. The copy starts
-    /// with no measurement cache of its own.
+    /// columns, column gap, vertical alignment, and style unchanged. The copy
+    /// starts with no measurement cache of its own.
     /// </summary>
     public Row With(
         double? marginTopPx = null,
         double? marginRightPx = null,
         double? marginBottomPx = null,
-        double? marginLeftPx = null) => new Row(Columns, ColumnGapPx, VerticalAlignment)
+        double? marginLeftPx = null) => new Row(Columns, ColumnGapPx, VerticalAlignment, Style)
     {
         MarginTopPx = marginTopPx ?? MarginTopPx,
         MarginRightPx = marginRightPx ?? MarginRightPx,
@@ -92,7 +97,17 @@ public sealed class Row : IReportElement
         MarginLeftPx = marginLeftPx ?? MarginLeftPx,
     };
 
-    private double[] ResolveColumnWidths(double availableWidthPx)
+    private double[] ResolveColumnWidths(double availableWidthPx) => ResolveColumnWidths(availableWidthPx, diagnosticsContext: null);
+
+    /// <summary>
+    /// Resolves each column's width. When <paramref name="diagnosticsContext"/>
+    /// is supplied (from <see cref="EnsureMeasured"/> - <see cref="RenderHtml"/>
+    /// doesn't pass one, to avoid double-reporting the same condition),
+    /// reports <see cref="LayoutWarningReason.ColumnWidthCollapsed"/> when an
+    /// auto-width column resolves to 0px because the row's fixed-width
+    /// columns plus column gaps already consume the full available width.
+    /// </summary>
+    private double[] ResolveColumnWidths(double availableWidthPx, LayoutContext? diagnosticsContext)
     {
         var totalGapPx = ColumnGapPx * (Columns.Count - 1);
         var available = Math.Max(0, availableWidthPx - totalGapPx);
@@ -111,6 +126,16 @@ public sealed class Row : IReportElement
         var autoCount = Columns.Count - explicitCount;
         var autoWidth = autoCount > 0 ? Math.Max(0, available - explicitTotal) / autoCount : 0;
 
+        if (autoCount > 0 && autoWidth <= 0 && diagnosticsContext?.Diagnostics is { } diagnostics)
+        {
+            var strict = Style.ColumnWidthOverflowMode == ColumnWidthOverflowMode.Throw || diagnosticsContext.StrictMode;
+            diagnostics.Report(
+                LayoutWarningReason.ColumnWidthCollapsed,
+                $"{autoCount} auto-width column(s) in this row resolved to 0px because its fixed-width columns ({explicitTotal:0.#}px) plus column gaps already consume the full {available:0.#}px available - their content is not visible.",
+                nameof(Row),
+                strict);
+        }
+
         var widths = new double[Columns.Count];
         for (var i = 0; i < Columns.Count; i++)
         {
@@ -122,10 +147,18 @@ public sealed class Row : IReportElement
 
     private void EnsureMeasured(LayoutContext context)
     {
+        var availableWidthPx = Math.Max(0, context.ContentWidthPx - MarginLeftPx - MarginRightPx);
+
+        // Always resolved (and its diagnostics reported) even on a cache hit
+        // below: the expensive per-child measurement is what's cached, not
+        // this cheap, column-count-sized width resolution - and a collapsed
+        // auto-width column should still be reported every time this row is
+        // measured (e.g. once per page it's re-tested against), not only the
+        // first time at a given content width.
+        var widths = ResolveColumnWidths(availableWidthPx, context);
+
         if (_cachedColumnHeights is not null && _cachedForContentWidthPx.Equals(context.ContentWidthPx)) return;
 
-        var availableWidthPx = Math.Max(0, context.ContentWidthPx - MarginLeftPx - MarginRightPx);
-        var widths = ResolveColumnWidths(availableWidthPx);
         var columnHeights = new double[Columns.Count];
         var elementHeights = new double[Columns.Count][];
 

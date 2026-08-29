@@ -48,4 +48,29 @@ internal static class CssFormat
 
     /// <summary>Maps a <see cref="FontStyle"/> to its CSS keyword.</summary>
     public static string FontStyleCss(FontStyle style) => style == Model.FontStyle.Italic ? "italic" : "normal";
+
+    /// <summary>Maps a <see cref="TextDirection"/> to its CSS <c>direction</c>/HTML <c>dir</c> keyword (identical spelling for both).</summary>
+    public static string Direction(TextDirection direction) => direction == TextDirection.Rtl ? "rtl" : "ltr";
+
+    /// <summary>
+    /// Formats a CSS string literal (e.g. a font-family name inside an
+    /// <c>@font-face</c> rule) for use directly inside a shared
+    /// <c>&lt;style&gt;</c> block. <b>Not</b> the same as <see cref="Attribute"/>:
+    /// a <c>&lt;style&gt;</c> element is an HTML5 "raw text" element, so HTML
+    /// entities inside it are never decoded - HTML-encoding a value destined
+    /// for CSS content (rather than an HTML attribute) would corrupt it.
+    /// Escapes backslash and double-quote per CSS string syntax and wraps
+    /// the result in double quotes.
+    /// </summary>
+    public static string CssString(string value) => "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+
+    /// <summary>Maps an embedded font's MIME type to the format() hint <c>@font-face</c> expects.</summary>
+    public static string FontFormat(string mimeType) => mimeType switch
+    {
+        "font/woff2" => "woff2",
+        "font/woff" => "woff",
+        "font/ttf" or "font/truetype" or "application/x-font-ttf" => "truetype",
+        "font/otf" or "font/opentype" => "opentype",
+        _ => mimeType,
+    };
 }

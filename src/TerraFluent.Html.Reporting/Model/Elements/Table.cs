@@ -220,7 +220,17 @@ public sealed class Table : IReportElement
         return groupEndForRow;
     }
 
-    private double[] ResolveColumnWidths(double contentWidthPx)
+    private double[] ResolveColumnWidths(double contentWidthPx) => ResolveColumnWidths(contentWidthPx, diagnosticsContext: null);
+
+    /// <summary>
+    /// Resolves each column's width. When <paramref name="diagnosticsContext"/>
+    /// is supplied (from <see cref="Measure"/> - <see cref="Split"/>/<see cref="RenderHtml"/>
+    /// don't pass one, to avoid double-reporting the same condition once per
+    /// page), reports <see cref="LayoutWarningReason.ColumnWidthCollapsed"/>
+    /// when an auto-width column resolves to 0px because the table's
+    /// fixed-width columns already consume the full available width.
+    /// </summary>
+    private double[] ResolveColumnWidths(double contentWidthPx, LayoutContext? diagnosticsContext)
     {
         var explicitTotal = 0.0;
         var explicitCount = 0;
@@ -235,6 +245,16 @@ public sealed class Table : IReportElement
 
         var autoCount = Columns.Count - explicitCount;
         var autoWidth = autoCount > 0 ? Math.Max(0, contentWidthPx - explicitTotal) / autoCount : 0;
+
+        if (autoCount > 0 && autoWidth <= 0 && diagnosticsContext?.Diagnostics is { } diagnostics)
+        {
+            var strict = Style.ColumnWidthOverflowMode == ColumnWidthOverflowMode.Throw || diagnosticsContext.StrictMode;
+            diagnostics.Report(
+                LayoutWarningReason.ColumnWidthCollapsed,
+                $"{autoCount} auto-width column(s) in this table resolved to 0px because its fixed-width columns ({explicitTotal:0.#}px) already consume the full {contentWidthPx:0.#}px available - their content is not visible.",
+                nameof(Table),
+                strict);
+        }
 
         var widths = new double[Columns.Count];
         for (var i = 0; i < Columns.Count; i++)
@@ -370,7 +390,7 @@ public sealed class Table : IReportElement
     /// <inheritdoc />
     public ElementMeasurement Measure(LayoutContext context)
     {
-        var widths = ResolveColumnWidths(context.ContentWidthPx);
+        var widths = ResolveColumnWidths(context.ContentWidthPx, context);
         var rowHeights = GetRowHeights(widths, context);
         // +1 border width for the table's outermost top edge - every row
         // already counts one border line for its own bottom edge (see
@@ -626,6 +646,7 @@ public sealed class Table : IReportElement
         sb.Append('<').Append(tag);
         if (colSpan > 1) sb.Append(" colspan=\"").Append(colSpan).Append('"');
         if (rowSpan > 1) sb.Append(" rowspan=\"").Append(rowSpan).Append('"');
+        sb.Append(" dir=\"").Append(CssFormat.Direction(style.Direction)).Append('"');
         sb.Append(" style=\"background-color:").Append(CssFormat.Attribute(backgroundColor))
           .Append(";color:").Append(CssFormat.Attribute(style.Color))
           .Append(";font-family:").Append(CssFormat.Attribute(style.FontFamily))
@@ -634,6 +655,7 @@ public sealed class Table : IReportElement
           .Append(";font-style:").Append(CssFormat.FontStyleCss(style.FontStyle))
           .Append(";line-height:").Append(CssFormat.Number(style.LineHeightMultiplier))
           .Append(";text-align:").Append(CssFormat.TextAlign(style.Alignment))
+          .Append(";direction:").Append(CssFormat.Direction(style.Direction))
           .Append(";padding:").Append(CssFormat.Px(Style.CellPaddingPx))
           .Append(";border:").Append(CssFormat.Px(Style.BorderWidthPx)).Append(" solid ").Append(CssFormat.Attribute(Style.BorderColor))
           .Append(";white-space:pre-wrap;\">").Append(CssFormat.Encode(text)).Append("</").Append(tag).Append('>');

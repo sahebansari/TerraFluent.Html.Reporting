@@ -124,6 +124,7 @@ public sealed class ReportList : IReportElement
           .Append(";height:").Append(CssFormat.Px(placement.HeightPx)).Append(";\">");
 
         sb.Append('<').Append(tag).Append(startAttribute)
+          .Append(" dir=\"").Append(CssFormat.Direction(TextStyle.Direction)).Append('"')
           .Append(" style=\"margin:0;padding-left:").Append(CssFormat.Px(IndentPx))
           .Append(";list-style-type:").Append(listStyleType)
           .Append(";font-family:").Append(CssFormat.Attribute(TextStyle.FontFamily))
@@ -131,7 +132,8 @@ public sealed class ReportList : IReportElement
           .Append(";font-weight:").Append(CssFormat.FontWeightCss(TextStyle.FontWeight))
           .Append(";font-style:").Append(CssFormat.FontStyleCss(TextStyle.FontStyle))
           .Append(";line-height:").Append(CssFormat.Number(TextStyle.LineHeightMultiplier))
-          .Append(";color:").Append(CssFormat.Attribute(TextStyle.Color)).Append(";\">");
+          .Append(";color:").Append(CssFormat.Attribute(TextStyle.Color))
+          .Append(";direction:").Append(CssFormat.Direction(TextStyle.Direction)).Append(";\">");
 
         foreach (var item in Items)
         {

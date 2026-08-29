@@ -1,3 +1,4 @@
+using System.Text;
 using System.Threading;
 using TerraFluent.Html.Reporting.Layout;
 
@@ -38,7 +39,8 @@ public sealed class HtmlReportRenderer : IHtmlReportRenderer
     /// <inheritdoc />
     public void RenderDocumentTo(TextWriter writer, LayoutResult layout, CancellationToken cancellationToken = default)
     {
-        writer.Write("<!DOCTYPE html><html><head><meta charset=\"utf-8\" /><title>Report</title><style>");
+        var title = layout.Title is { Length: > 0 } rawTitle ? CssFormat.Encode(rawTitle) : "Report";
+        writer.Write("<!DOCTYPE html><html><head><meta charset=\"utf-8\" /><title>" + title + "</title><style>");
         writer.Write(BuildStyles(layout, includeDocumentChrome: true));
         writer.Write("</style></head><body>");
         RenderPages(writer, layout, cancellationToken);
@@ -65,6 +67,7 @@ public sealed class HtmlReportRenderer : IHtmlReportRenderer
         var printBody = includeDocumentChrome ? "body { background: none; } " : string.Empty;
 
         return
+            BuildFontFaceRules(layout.EmbeddedFonts) +
             "@page { size: " + width + "px " + height + "px; margin: 0; } " +
             documentChrome +
             ".fhr-page { position: relative; width: " + CssFormat.Px(layout.PageSize.WidthPx) +
@@ -73,6 +76,24 @@ public sealed class HtmlReportRenderer : IHtmlReportRenderer
                 "box-shadow: 0 0 6px rgba(0,0,0,0.25); page-break-after: always; break-after: page; } " +
             ".fhr-page:last-child { page-break-after: auto; break-after: auto; margin-bottom: 0; } " +
             "@media print { " + printBody + ".fhr-page { margin: 0; box-shadow: none; } }";
+    }
+
+    private static string BuildFontFaceRules(IReadOnlyList<Model.Styling.EmbeddedFont> fonts)
+    {
+        if (fonts.Count == 0) return string.Empty;
+
+        var sb = new StringBuilder();
+        foreach (var font in fonts)
+        {
+            sb.Append("@font-face{font-family:").Append(CssFormat.CssString(font.FontFamily))
+              .Append(";src:url(data:").Append(font.MimeType).Append(";base64,")
+              .Append(Convert.ToBase64String(font.FontBytes)).Append(") format(").Append(CssFormat.CssString(CssFormat.FontFormat(font.MimeType)))
+              .Append(");font-weight:").Append(CssFormat.FontWeightCss(font.Weight))
+              .Append(";font-style:").Append(CssFormat.FontStyleCss(font.Style))
+              .Append(";} ");
+        }
+
+        return sb.ToString();
     }
 
     private static void RenderPages(TextWriter writer, LayoutResult layout, CancellationToken cancellationToken)
