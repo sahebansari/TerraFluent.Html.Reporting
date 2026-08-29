@@ -35,6 +35,7 @@ If you're new to the library, read these in order:
 | **[Extending the Library](11-extending.md)** | You want to plug in a custom text measurer, a custom renderer, or a brand-new element type. |
 | **[FAQ / Troubleshooting](12-faq-troubleshooting.md)** | Something isn't behaving the way you expected. |
 | **[Release Checklist](13-release-checklist.md)** | You're preparing, validating, or publishing a NuGet release. |
+| **[Supported Composition Patterns](15-composition-patterns.md)** | You want to nest one container (row, table, multi-column section) inside another and aren't sure what's supported. |
 
 ## Conventions used throughout
 

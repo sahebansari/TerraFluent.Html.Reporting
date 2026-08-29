@@ -52,6 +52,10 @@ public sealed class ContentBuilder
     public ImageElementBuilder AddBarcode(string value, double moduleWidthPx = 2, double heightPx = 60, int quietZoneModules = 10) =>
         AddImageCore(BarcodeImage.CreateCode128(value, moduleWidthPx, heightPx, quietZoneModules));
 
+    /// <summary>Adds a QR code as an image. See <see cref="QrCodeImage"/> for encoding scope/limitations.</summary>
+    public ImageElementBuilder AddQrCode(string value, double moduleWidthPx = 4, int quietZoneModules = 4) =>
+        AddImageCore(QrCodeImage.CreateQrCode(value, moduleWidthPx, quietZoneModules));
+
     private ImageElementBuilder AddImageCore(ReportImage image)
     {
         var index = _elements.Count;
@@ -94,14 +98,29 @@ public sealed class ContentBuilder
     /// Like an image, a row never splits across pages - one too tall for the
     /// remaining space moves whole to the next page.
     /// </summary>
-    public RowHandle AddRow(Action<RowBuilder> configure, double columnGapPx = 12, RowVerticalAlignment verticalAlignment = RowVerticalAlignment.Middle)
+    public RowHandle AddRow(Action<RowBuilder> configure, double columnGapPx = 12, RowVerticalAlignment verticalAlignment = RowVerticalAlignment.Middle, RowStyle? style = null)
     {
         var builder = new RowBuilder();
         configure(builder);
-        var row = builder.Build(columnGapPx, verticalAlignment);
+        var row = builder.Build(columnGapPx, verticalAlignment, style);
         var index = _elements.Count;
         _elements.Add(row);
         return new RowHandle(row, e => _elements[index] = e);
+    }
+
+    /// <summary>
+    /// Adds an opt-in, conservative multi-column content block - see
+    /// <see cref="MultiColumnSection"/> for exactly what "conservative" means
+    /// (equal-width columns, fill-then-wrap only, no nesting). The default
+    /// single-column flow used by every other <c>Add*</c> method here is
+    /// completely unaffected by this - it's just another element.
+    /// </summary>
+    public ContentBuilder AddColumns(int columnCount, Action<ColumnsBuilder> configure, double columnGapPx = 12)
+    {
+        var builder = new ColumnsBuilder();
+        configure(builder);
+        _elements.Add(new MultiColumnSection(builder.Elements, columnCount, columnGapPx));
+        return this;
     }
 
     /// <summary>Forces the next element to start on a fresh page.</summary>

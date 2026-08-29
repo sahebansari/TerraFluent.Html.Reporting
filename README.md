@@ -17,22 +17,32 @@ PDF engine. The library targets `netstandard2.0` and `net10.0`.
 
 [![View Sample Reports](https://img.shields.io/badge/View-Sample%20Reports-2f4858?style=for-the-badge)](https://sahebansari.github.io/TerraFluent.Html.Reporting/SampleReports/index.html)
 
-## What's New in 1.1.1
+## What's New in 1.2.0
 
-- `AddBarcode(value, moduleWidthPx, heightPx, quietZoneModules)` on content,
-  header/footer, and row-column builders: generates a Code 128 barcode
-  natively as a PNG image - no external barcode library or web service
-  involved. Returns the same image builder as `AddImage`, so it supports
-  alignment, margin, and padding modifiers. See
-  [Content Elements: Barcode](docs/03-content-elements.md#barcode) and the
-  [cookbook recipe](docs/10-cookbook.md#a-barcode-in-the-header-invoice-number).
-- Table cell `ColSpan`/`RowSpan`, for a merged header/summary cell or a
-  category cell grouping several rows. A `RowSpan` group is treated as one
-  atomic unit during pagination - see
-  [Tables: Column and row spans](docs/05-tables.md#column-and-row-spans) and
-  the [cookbook recipe](docs/10-cookbook.md#grouping-rows-with-rowspan).
+- `AddColumns(columnCount, configure, columnGapPx)`: opt-in, conservative
+  multi-column ("newspaper-style") content blocks - equal-width columns,
+  fill-then-wrap, splitting across a column boundary just like content
+  already splits across a page boundary. See
+  [Rows and Columns: Multi-column sections](docs/06-rows-and-columns.md#multi-column-sections-addcolumns).
+- `AddQrCode(value, moduleWidthPx, quietZoneModules)`: generates a QR code
+  natively as a PNG, matching `AddBarcode`'s API shape - no external library
+  or web service involved.
+- `TextStyle.Direction` for right-to-left text (`dir`/CSS `direction`), and
+  `ReportDocumentBuilder.EmbedFont(...)` to embed a custom font as a base64
+  `@font-face` rule. See [Styling](docs/04-styling.md#text-direction).
+- `ReportDocumentBuilder.Title(...)` sets the generated HTML's `<title>`.
+- `LayoutWarning` gained structured `Reason`/`ElementType`/`ElementIndex`
+  fields (filterable via the new `LayoutWarningReason` enum) instead of only
+  a free-form message, and a table/row's auto-width column collapsing to
+  0px is no longer silent - it now raises a `ColumnWidthCollapsed` warning,
+  with an opt-in `UseStrictLayoutValidation()`/`ColumnWidthOverflowMode` to
+  throw instead.
+- A new [Supported Composition Patterns](docs/15-composition-patterns.md)
+  reference, a reference Playwright-backed `ITextMeasurer` sample, and a
+  minimal preview/debug console harness - see
+  [Repository Layout](#repository-layout) below.
 
-See [CHANGELOG.md](CHANGELOG.md#111---2026-07-03) for the full release notes.
+See [CHANGELOG.md](CHANGELOG.md#120---2026-08-30) for the full release notes.
 
 ## Install
 
@@ -79,17 +89,22 @@ print or save it as PDF.
 - Fixed page geometry: A4, Letter, Legal, portrait/landscape, or custom sizes.
 - Repeating headers and footers, including page number templates.
 - Paragraphs, headings, images, tables, lists, rules, spacers, page breaks, raw
-  HTML, and side-by-side row layouts.
-- Natively generated Code 128 barcode images - no external library or web
-  service - handy for an invoice number in the header or a tracking number on
-  a label.
+  HTML, side-by-side row layouts, and opt-in multi-column ("newspaper-style")
+  sections.
+- Natively generated Code 128 barcode and QR code images - no external
+  library or web service - handy for an invoice number in the header or a
+  tracking number on a label.
 - Table cell `ColSpan`/`RowSpan` for merged header/summary cells or grouped
   categories.
+- Right-to-left text direction and embedded custom fonts.
 - Fluent styling for text, margins, padding, alignment, images, rows, and
   tables.
 - Pagination with line-level paragraph splitting, table row splitting, repeated
   table headers, and numbered-list continuation.
-- Layout warnings for content that cannot fit on an empty page.
+- Layout warnings, categorized via `LayoutWarningReason`, for content that
+  cannot fit on an empty page or an auto-width table/row column that collapsed
+  to 0px.
+- Document title, rendered into the generated HTML's `<title>`.
 - Streaming render APIs and async file rendering for larger reports.
 - Extension points for custom elements, renderers, and text measurement.
 
@@ -104,9 +119,18 @@ If page breaks must match a specific rendering engine exactly, implement
 `ITextMeasurer` and pass it to `UseTextMeasurer(...)` when building the
 document.
 
+## Tested Against Real Browsers
+
+Beyond unit tests for the pagination math itself, CI renders generated
+reports in **real, headless Chromium, Firefox, and WebKit** (via
+[Playwright](https://playwright.dev/dotnet/)) and asserts every page's
+rendered geometry matches the requested page size exactly under
+`@media print` - the same media browsers use for "Print to PDF". See
+[docs/08-rendering.md#tested-against-real-browsers](docs/08-rendering.md#tested-against-real-browsers).
+
 ## Samples
 
-Run the sample project to generate thirteen HTML reports:
+Run the sample project to generate eighteen HTML reports:
 
 ```shell
 dotnet run --project samples/TerraFluent.Html.Reporting.Sample
@@ -114,7 +138,13 @@ dotnet run --project samples/TerraFluent.Html.Reporting.Sample
 
 The sample output includes getting started, styling, images, tables, lists,
 page breaks, raw HTML, warnings, invoices, certificates, row layouts, an
-invoice with a barcode in the header, and a table using column/row spans.
+invoice with a barcode in the header, a table using column/row spans, a
+multi-column newsletter layout, a shipping label combining a barcode and a
+QR code, embedded custom fonts, right-to-left text, and column-width
+diagnostics.
+
+Two more small sample projects demonstrate specific extension points -
+see [Repository Layout](#repository-layout) below.
 
 ## Documentation
 
@@ -131,11 +161,14 @@ invoice with a barcode in the header, and a table using column/row spans.
 - [Extending the Library](docs/11-extending.md)
 - [FAQ / Troubleshooting](docs/12-faq-troubleshooting.md)
 - [Release Checklist](docs/13-release-checklist.md)
+- [Supported Composition Patterns](docs/15-composition-patterns.md)
 
 ## Repository Layout
 
 - [src/TerraFluent.Html.Reporting](src/TerraFluent.Html.Reporting) - the library.
 - [samples/TerraFluent.Html.Reporting.Sample](samples/TerraFluent.Html.Reporting.Sample) - runnable examples.
+- [samples/TerraFluent.Html.Reporting.Sample.PlaywrightMeasurer](samples/TerraFluent.Html.Reporting.Sample.PlaywrightMeasurer) - a reference `ITextMeasurer` backed by headless Chromium.
+- [samples/TerraFluent.Html.Reporting.Sample.Preview](samples/TerraFluent.Html.Reporting.Sample.Preview) - a minimal preview/debug console harness.
 - [tests/TerraFluent.Html.Reporting.Tests](tests/TerraFluent.Html.Reporting.Tests) - unit and pagination tests.
 - [tests/TerraFluent.Html.Reporting.BrowserTests](tests/TerraFluent.Html.Reporting.BrowserTests) - browser print-layout checks.
 - [tests/TerraFluent.Html.Reporting.NetStandardConsumer](tests/TerraFluent.Html.Reporting.NetStandardConsumer) - `netstandard2.0` consumer smoke project.
@@ -143,7 +176,7 @@ invoice with a barcode in the header, and a table using column/row spans.
 
 ## Status
 
-This library is stable for public use. The current version is `1.1.1`. See
+This library is stable for public use. The current version is `1.2.0`. See
 [CHANGELOG.md](CHANGELOG.md) for release history and
 [known limitations](docs/12-faq-troubleshooting.md#known-limitations) for the
 current boundaries.

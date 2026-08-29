@@ -129,6 +129,43 @@ public enum RowVerticalAlignment
 }
 
 /// <summary>
+/// Controls how a <see cref="Model.Elements.Table"/>/<see cref="Model.Elements.Row"/>
+/// reacts when an auto-width column resolves to 0px because its fixed-width
+/// columns already consume the full width available to it.
+/// </summary>
+public enum ColumnWidthOverflowMode
+{
+    /// <summary>
+    /// Record a <see cref="Layout.LayoutWarning"/> with
+    /// <see cref="Layout.LayoutWarningReason.ColumnWidthCollapsed"/> and
+    /// continue - the collapsed column's content will not be visible.
+    /// </summary>
+    Warn,
+
+    /// <summary>Throw an <see cref="InvalidOperationException"/> instead of warning.</summary>
+    Throw,
+}
+
+/// <summary>
+/// Text direction for a text-bearing element - emitted as both the HTML
+/// <c>dir</c> attribute and the CSS <c>direction</c> property. Independent
+/// of <see cref="TextAlignment"/>: setting <see cref="Rtl"/> does not itself
+/// change <c>Left</c>/<c>Right</c> alignment to a "logical" start/end -
+/// margin/padding/alignment on <c>TextStyle</c> remain physical properties,
+/// same as plain CSS <c>left</c>/<c>right</c> (as opposed to logical
+/// <c>start</c>/<c>end</c>) values - set both explicitly for a fully
+/// mirrored right-to-left layout.
+/// </summary>
+public enum TextDirection
+{
+    /// <summary>Left-to-right (the default).</summary>
+    Ltr,
+
+    /// <summary>Right-to-left.</summary>
+    Rtl,
+}
+
+/// <summary>
 /// Identifies which repeating section of a page an element belongs to.
 /// </summary>
 public enum PageSectionKind

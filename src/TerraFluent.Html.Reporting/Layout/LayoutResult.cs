@@ -25,12 +25,26 @@ public sealed class LayoutResult
     /// </summary>
     public IReadOnlyList<LayoutWarning> Warnings { get; }
 
+    /// <summary>The document's title, or <see langword="null"/> if none was set - see <c>ReportDocumentBuilder.Title</c>.</summary>
+    public string? Title { get; }
+
+    /// <summary>Fonts to embed as <c>@font-face</c> rules - see <c>ReportDocumentBuilder.EmbedFont</c>. Empty unless at least one was added.</summary>
+    public IReadOnlyList<Model.Styling.EmbeddedFont> EmbeddedFonts { get; }
+
     /// <summary>Creates a layout result.</summary>
-    public LayoutResult(IReadOnlyList<PageLayout> pages, PageSize pageSize, Margins margins, IReadOnlyList<LayoutWarning>? warnings = null)
+    public LayoutResult(
+        IReadOnlyList<PageLayout> pages,
+        PageSize pageSize,
+        Margins margins,
+        IReadOnlyList<LayoutWarning>? warnings = null,
+        string? title = null,
+        IReadOnlyList<Model.Styling.EmbeddedFont>? embeddedFonts = null)
     {
         Pages = Guard.Snapshot(pages, nameof(pages));
         PageSize = pageSize;
         Margins = margins;
         Warnings = warnings is null ? Array.Empty<LayoutWarning>() : Guard.Snapshot(warnings, nameof(warnings));
+        Title = title;
+        EmbeddedFonts = embeddedFonts is null ? Array.Empty<Model.Styling.EmbeddedFont>() : Guard.Snapshot(embeddedFonts, nameof(embeddedFonts));
     }
 }

@@ -60,6 +60,10 @@ public sealed class RowColumnBuilder
     public ImageElementBuilder AddBarcode(string value, double moduleWidthPx = 2, double heightPx = 60, int quietZoneModules = 10) =>
         AddImageCore(BarcodeImage.CreateCode128(value, moduleWidthPx, heightPx, quietZoneModules));
 
+    /// <summary>Adds a QR code as an image. See <see cref="QrCodeImage"/> for encoding scope/limitations.</summary>
+    public ImageElementBuilder AddQrCode(string value, double moduleWidthPx = 4, int quietZoneModules = 4) =>
+        AddImageCore(QrCodeImage.CreateQrCode(value, moduleWidthPx, quietZoneModules));
+
     private ImageElementBuilder AddImageCore(ReportImage image)
     {
         var index = _elements.Count;

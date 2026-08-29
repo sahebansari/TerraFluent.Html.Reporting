@@ -4,6 +4,98 @@ All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [Unreleased]
+
+## [1.2.0] - 2026-08-30
+
+### Added
+- `AddColumns(columnCount, configure, columnGapPx)` on `ContentBuilder`: an
+  opt-in, conservative multi-column ("newspaper-style") content block -
+  equal-width columns, fill-then-wrap only (no balancing), content
+  distributed across all columns even when it would otherwise fit as a
+  single column. A child that supports splitting (paragraph, table) splits
+  across a column boundary exactly as it already splits across a page
+  boundary; an oversized, unsplittable child force-places into its own
+  column with a `LayoutWarning`. Nested multi-column sections and `AddRow`
+  inside a column are not supported. See `MultiColumnSection` and
+  [docs/06-rows-and-columns.md](docs/06-rows-and-columns.md#multi-column-sections-addcolumns).
+- `TextStyle.Direction` (`TextDirection.Ltr`/`.Rtl`): sets the HTML `dir`
+  attribute and CSS `direction` property on paragraphs, headings, lists,
+  and table cells. Independent of `Alignment`/margin/padding, which remain
+  physical (not logical) properties - see
+  [docs/04-styling.md#text-direction](docs/04-styling.md#text-direction).
+- `ReportDocumentBuilder.EmbedFont(fontFamily, fontBytesOrFilePath, weight, style, mimeType)`:
+  embeds a font file directly into the generated HTML as a base64
+  `@font-face` rule, so a report no longer depends on that font being
+  installed wherever the HTML is opened or printed.
+- [docs/15-composition-patterns.md](docs/15-composition-patterns.md): a new
+  single reference for what can nest inside what across `Row`, `Table`, and
+  `AddColumns`, and why each restriction exists.
+- New sample scenarios: a shipping label template (`15-shipping-label.html`,
+  a compact custom page size combining a barcode and a QR code), a
+  multi-column newsletter layout (`14-multi-column.html`), embedded custom
+  fonts (`16-custom-fonts.html`, using the OFL-licensed Pacifico font),
+  right-to-left text (`17-rtl-text.html`), and column-width diagnostics
+  (`18-column-diagnostics.html`). The sample runner now also prints each
+  `LayoutWarning`'s structured `Reason`/`ElementType`/`PageIndex`/`ElementIndex`
+  fields instead of only its free-form message, and a few realistic
+  scenarios (getting started, sales invoice, shipping label) now set
+  `.Title(...)`.
+- A minimal preview/debug console harness at
+  `samples/TerraFluent.Html.Reporting.Sample.Preview` - paginates a report,
+  prints its warnings with their structured fields, and opens the generated
+  HTML in the default browser.
+- `AddQrCode(value, moduleWidthPx, quietZoneModules)` on `ContentBuilder`,
+  `PageSectionBuilder` (header/footer), and `RowColumnBuilder`: generates a
+  QR code (ISO/IEC 18004) natively as a PNG - no external library or web
+  service - matching `AddBarcode`'s API shape (alignment/margin/padding via
+  the same `ImageElementBuilder`). Scoped to byte-mode (UTF-8) encoding, a
+  single fixed error-correction level ("M"), and an auto-selected version
+  (1-40); numeric/alphanumeric mode compaction and a selectable error-correction
+  level are not supported. Verified end-to-end against an independent QR
+  decoder across multiple versions (including the 1-/2-byte count-indicator
+  boundary at version 10) and UTF-8 multi-byte content.
+- `ReportDocumentBuilder.UseStrictLayoutValidation(strict)`: opts the whole
+  document into throwing `InvalidOperationException` (instead of only
+  recording a `LayoutWarning`) when a table/row's auto-width column
+  collapses to 0px. A single table/row can opt in individually instead via
+  the new `TableStyle.ColumnWidthOverflowMode`/`RowStyle.ColumnWidthOverflowMode`
+  (new `RowStyle` type, passable to `AddRow`), regardless of the document-level
+  setting.
+- A reference `ITextMeasurer` sample backed by headless Chromium (via
+  Playwright), measuring word widths with the browser's actual installed
+  font instead of the default's static Helvetica table - see
+  `samples/TerraFluent.Html.Reporting.Sample.PlaywrightMeasurer` and its
+  README for what it improves on and its limits.
+- `ReportDocumentBuilder.Title(string)`: sets the document's title, rendered
+  (HTML-encoded) as the generated HTML's `<title>` (falls back to `"Report"`
+  when unset, unchanged from before) and exposed to custom `IHtmlReportRenderer`
+  implementations via the new `LayoutResult.Title`.
+- `LayoutWarningReason` enum (`Overflow`, `ColumnWidthCollapsed`) and three new
+  `LayoutWarning` properties - `Reason`, `ElementType`, `ElementIndex` - so
+  warnings can be filtered/grouped programmatically instead of parsing
+  `Message`. The existing two-argument `LayoutWarning(pageIndex, message)`
+  constructor is unchanged and defaults `Reason` to `Overflow`.
+- `Table`/`Row` now report a `LayoutWarningReason.ColumnWidthCollapsed`
+  warning when an auto-width column resolves to 0px because the table/row's
+  fixed-width columns already consume the full available width - previously
+  this collapsed silently with no signal (see
+  [12-faq-troubleshooting.md#known-limitations](docs/12-faq-troubleshooting.md#known-limitations)).
+
+### Changed
+- README and [docs/08-rendering.md](docs/08-rendering.md#tested-against-real-browsers)
+  now call out that CI renders generated reports in real, headless Chromium,
+  Firefox, and WebKit (via Playwright) under `@media print` and asserts on
+  their rendered geometry - this was previously only visible in a CI config
+  comment.
+
+### Testing
+- Added direct unit tests for the default `ApproximateTextMeasurer` (word-wrap
+  boundaries, bold width multiplier, multi-paragraph/`\n` handling, and the
+  documented non-hyphenation behavior for an overflowing word) - previously
+  every test substituted a fake measurer for determinism, leaving the actual
+  shipped default measurement code untested in isolation.
+
 ## [1.1.1] - 2026-07-03
 
 ### Added

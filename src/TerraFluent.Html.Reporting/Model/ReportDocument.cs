@@ -37,6 +37,33 @@ public sealed class ReportDocument
     /// <summary>The text measurer used for layout; defaults to <c>ApproximateTextMeasurer</c> unless overridden on the builder.</summary>
     public ITextMeasurer TextMeasurer { get; }
 
+    /// <summary>
+    /// The document's title, or <see langword="null"/> if none was set via
+    /// <see cref="Fluent.ReportDocumentBuilder.Title"/>. Rendered as the
+    /// generated HTML's <c>&lt;title&gt;</c> (falling back to <c>"Report"</c>
+    /// when unset) and available to custom <c>IHtmlReportRenderer</c>
+    /// implementations via <see cref="Layout.LayoutResult.Title"/>.
+    /// </summary>
+    public string? Title { get; }
+
+    /// <summary>
+    /// When true, a <see cref="Model.Elements.Table"/>/<see cref="Model.Elements.Row"/>
+    /// whose auto-width column collapses to 0px throws an
+    /// <see cref="InvalidOperationException"/> instead of only recording a
+    /// <see cref="Layout.LayoutWarning"/> - see
+    /// <see cref="Fluent.ReportDocumentBuilder.UseStrictLayoutValidation"/>.
+    /// A table/row can also opt into this individually via its own style's
+    /// <see cref="ColumnWidthOverflowMode"/> regardless of this setting.
+    /// </summary>
+    public bool StrictLayoutValidation { get; }
+
+    /// <summary>
+    /// Fonts embedded directly into the generated HTML as base64 data URI
+    /// <c>@font-face</c> rules - see <see cref="Fluent.ReportDocumentBuilder.EmbedFont(string, byte[], FontWeight, FontStyle, string)"/>.
+    /// Empty unless at least one was added.
+    /// </summary>
+    public IReadOnlyList<Styling.EmbeddedFont> EmbeddedFonts { get; }
+
     /// <summary>Constructs a document. Intended to be called only by <see cref="ReportDocumentBuilder.Build"/>.</summary>
     internal ReportDocument(
         PageSize pageSize,
@@ -45,7 +72,10 @@ public sealed class ReportDocument
         IPageSection? header,
         IPageSection? footer,
         IReadOnlyList<IReportElement> contentElements,
-        ITextMeasurer textMeasurer)
+        ITextMeasurer textMeasurer,
+        string? title = null,
+        bool strictLayoutValidation = false,
+        IReadOnlyList<Styling.EmbeddedFont>? embeddedFonts = null)
     {
         PageSize = pageSize.WithOrientation(orientation);
         Orientation = orientation;
@@ -54,6 +84,9 @@ public sealed class ReportDocument
         Footer = footer;
         ContentElements = Guard.Snapshot(contentElements, nameof(contentElements));
         TextMeasurer = textMeasurer ?? throw new ArgumentNullException(nameof(textMeasurer));
+        Title = title;
+        StrictLayoutValidation = strictLayoutValidation;
+        EmbeddedFonts = embeddedFonts is null ? Array.Empty<Styling.EmbeddedFont>() : Guard.Snapshot(embeddedFonts, nameof(embeddedFonts));
     }
 
     /// <summary>

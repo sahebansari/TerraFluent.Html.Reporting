@@ -286,6 +286,123 @@ public class HtmlReportRendererTests
         Assert.Equal(2, CountOccurrences(rowHtml, "<td"));
     }
 
+    [Fact]
+    public void RenderDocument_DefaultDirection_EmitsLtrOnTextElements()
+    {
+        var document = ReportDocument.Create(PageSize.FromPixels(400, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .Content(c =>
+            {
+                c.AddParagraph("Hello");
+                c.AddHeading("Heading", HeadingLevel.H1);
+                c.AddList(ListStyle.Bulleted, new[] { "Item" });
+            })
+            .Build();
+
+        var html = HtmlReportRenderer.Default.RenderDocument(Paginate(document));
+
+        Assert.Equal(3, CountOccurrences(html, "dir=\"ltr\""));
+        Assert.Contains("direction:ltr", html);
+        Assert.DoesNotContain("dir=\"rtl\"", html);
+    }
+
+    [Fact]
+    public void RenderDocument_RtlDirection_EmitsRtlDirAttributeAndCss()
+    {
+        var rtlStyle = TextStyle.Default.With(direction: TextDirection.Rtl);
+        var document = ReportDocument.Create(PageSize.FromPixels(400, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .Content(c =>
+            {
+                c.AddParagraph("مرحبا", rtlStyle);
+                c.AddHeading("عنوان", HeadingLevel.H1, rtlStyle);
+                c.AddList(ListStyle.Bulleted, new[] { "بند" }, rtlStyle.With(marginBottomPx: 0));
+            })
+            .Build();
+
+        var html = HtmlReportRenderer.Default.RenderDocument(Paginate(document));
+
+        Assert.Equal(3, CountOccurrences(html, "dir=\"rtl\""));
+        Assert.Equal(3, CountOccurrences(html, "direction:rtl"));
+    }
+
+    [Fact]
+    public void RenderDocument_TableCellRtlStyleOverride_EmitsRtlOnlyOnThatCell()
+    {
+        var document = ReportDocument.Create(PageSize.FromPixels(400, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .Content(c => c.AddTable(table =>
+            {
+                table.AddColumns("A", "B");
+                table.AddRow(new TableCell[]
+                {
+                    new("رتل", TextStyle.Default.With(direction: TextDirection.Rtl)),
+                    "ltr cell",
+                });
+            }))
+            .Build();
+
+        var html = HtmlReportRenderer.Default.RenderDocument(Paginate(document));
+
+        // Header cells (2) + the ltr body cell = 3 ltr; the one overridden body cell = 1 rtl.
+        Assert.Equal(3, CountOccurrences(html, "dir=\"ltr\""));
+        Assert.Equal(1, CountOccurrences(html, "dir=\"rtl\""));
+    }
+
+    [Fact]
+    public void RenderDocument_NoEmbeddedFonts_EmitsNoFontFaceRule()
+    {
+        var document = ReportDocument.Create(PageSize.FromPixels(400, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .Content(c => c.AddParagraph("Hello"))
+            .Build();
+
+        var html = HtmlReportRenderer.Default.RenderDocument(Paginate(document));
+
+        Assert.DoesNotContain("@font-face", html);
+    }
+
+    [Fact]
+    public void RenderDocument_EmbeddedFont_EmitsFontFaceRuleWithBase64DataUri()
+    {
+        var fontBytes = new byte[] { 1, 2, 3, 4 };
+        var document = ReportDocument.Create(PageSize.FromPixels(400, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .EmbedFont("My Custom Font", fontBytes, FontWeight.Bold, FontStyle.Italic, "font/woff2")
+            .Content(c => c.AddParagraph("Hello"))
+            .Build();
+
+        var html = HtmlReportRenderer.Default.RenderDocument(Paginate(document));
+
+        Assert.Contains("@font-face{font-family:\"My Custom Font\"", html);
+        Assert.Contains("src:url(data:font/woff2;base64," + Convert.ToBase64String(fontBytes) + ") format(\"woff2\")", html);
+        Assert.Contains("font-weight:bold", html);
+        Assert.Contains("font-style:italic", html);
+    }
+
+    [Fact]
+    public void RenderDocument_MultipleEmbeddedFonts_EmitsOneFontFaceRuleEach()
+    {
+        var document = ReportDocument.Create(PageSize.FromPixels(400, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .EmbedFont("Font One", new byte[] { 1 })
+            .EmbedFont("Font Two", new byte[] { 2 })
+            .Content(c => c.AddParagraph("Hello"))
+            .Build();
+
+        var html = HtmlReportRenderer.Default.RenderDocument(Paginate(document));
+
+        Assert.Equal(2, CountOccurrences(html, "@font-face"));
+        Assert.Contains("\"Font One\"", html);
+        Assert.Contains("\"Font Two\"", html);
+    }
+
     private static int CountOccurrences(string haystack, string needle)
     {
         var count = 0;

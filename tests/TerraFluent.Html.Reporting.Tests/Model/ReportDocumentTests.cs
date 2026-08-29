@@ -15,6 +15,28 @@ public class ReportDocumentTests
             .Build();
 
     [Fact]
+    public void RenderHtml_NoTitleSet_FallsBackToReport()
+    {
+        var document = BuildSampleDocument();
+
+        Assert.Contains("<title>Report</title>", document.RenderHtml());
+    }
+
+    [Fact]
+    public void RenderHtml_TitleSet_IsHtmlEncodedIntoTitleTag()
+    {
+        var document = ReportDocument.Create(PageSize.FromPixels(400, 300))
+            .SetMargins(0)
+            .UseTextMeasurer(new FakeTextMeasurer())
+            .Title("Q&A <Report>")
+            .Content(c => c.AddParagraph("Hello world"))
+            .Build();
+
+        Assert.Equal("Q&A <Report>", document.Title);
+        Assert.Contains("<title>Q&amp;A &lt;Report&gt;</title>", document.RenderHtml());
+    }
+
+    [Fact]
     public void RenderHtmlDocument_WritesTheSameContentAsRenderHtml()
     {
         var document = BuildSampleDocument();

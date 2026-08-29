@@ -45,7 +45,12 @@ fixed-width columns get exactly what you specified; whatever's left after
 subtracting fixed widths *and* the gaps between columns
 (`columnGapPx * (columnCount - 1)`) is divided equally among the auto-width
 columns. If fixed widths and gaps alone exceed the available width, auto
-columns are pinned to `0` rather than going negative.
+columns are pinned to `0` (their content isn't visible) - this now records
+a `LayoutWarning` with `LayoutWarningReason.ColumnWidthCollapsed` rather
+than failing silently, and you can opt into throwing instead via
+`RowStyle.ColumnWidthOverflowMode` or document-wide via
+`ReportDocumentBuilder.UseStrictLayoutValidation()` - see
+[Pagination and Layout: Warnings](07-pagination-and-layout.md#layoutwarning-when-content-doesnt-fit).
 
 ## Vertical alignment
 
@@ -135,11 +140,61 @@ Left/right margin shrinks the width available to the row's columns from that
 edge (and shifts the row right, for left margin); top/bottom margin adds
 vertical space exactly like a text element's margin does.
 
+## Multi-column sections (`AddColumns`)
+
+`AddColumns` is a different, opt-in kind of side-by-side layout from `Row`:
+instead of a fixed set of independently-sized columns holding whatever
+content you put in each one, it packs one **flat** list of content into a
+fixed number of **equal-width** columns automatically, filling one
+completely before moving to the next:
+
+```csharp
+c.AddColumns(3, columns =>
+{
+    columns.AddHeading("Section One", HeadingLevel.H3);
+    columns.AddParagraph("...");
+    columns.AddRule();
+    columns.AddHeading("Section Two", HeadingLevel.H3);
+    columns.AddParagraph("...");
+    // as much content as you like - it flows into column 2, then column 3,
+    // then wraps to a fresh multi-column section on the next page.
+}, columnGapPx: 20);
+```
+
+This is the library's "newspaper column" layout, and it behaves
+differently from `Row` in ways that matter:
+
+- **Content flows and paginates**, unlike a `Row` (which is always placed
+  whole or force-placed with a warning). A paragraph or table that doesn't
+  fit in the remaining space of one column splits across the column
+  boundary exactly the way it already splits across a page boundary - see
+  [Pagination and Layout](07-pagination-and-layout.md) for the underlying
+  `Measure`/`Split` contract every element (including columns' contents)
+  implements.
+- **Columns are always equal width** - the same "share what's left after
+  gaps" math `Row`/`Table` auto-columns already use, just applied to every
+  column rather than only the auto-width ones.
+- **`ColumnsBuilder` supports most of `ContentBuilder`'s method set** -
+  paragraphs, headings, images, barcodes, QR codes, tables, lists, rules,
+  spacers, and raw HTML - except `AddRow` (a row can't span a column) and
+  `AddPageBreak`/`AddColumns` (a page break and nested multi-column
+  sections aren't supported inside a column's content in this version).
+- **An oversized, unsplittable child** (e.g. an image taller than a whole
+  empty column) is force-placed in its own column and recorded as a
+  `LayoutWarning`, mirroring how the page-level engine handles the same
+  situation - see
+  [Pagination and Layout: Warnings](07-pagination-and-layout.md#layoutwarning-when-content-doesnt-fit).
+
+See [Supported Composition Patterns](15-composition-patterns.md) for what
+can and can't go inside a column, and why.
+
 ## Where to go next
 
 - [Content Elements](03-content-elements.md) for how `Row` compares to the
   library's other elements.
 - [Styling](04-styling.md) for the full list of `RowHandle`/`RowColumnHandle`
   modifiers.
+- [Supported Composition Patterns](15-composition-patterns.md) for what
+  can nest inside what, across `Row`, `Table`, and `AddColumns`.
 - [Cookbook: Row layouts](10-cookbook.md#a-header-and-footer-with-a-logo-row)
   for a complete invoice-style header/footer built from rows.

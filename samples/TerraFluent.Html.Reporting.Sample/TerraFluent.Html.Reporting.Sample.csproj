@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <None Include="images\**" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="fonts\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

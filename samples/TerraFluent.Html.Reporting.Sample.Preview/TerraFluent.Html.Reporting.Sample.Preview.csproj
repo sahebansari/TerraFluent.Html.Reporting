@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>TerraFluent.Html.Reporting.Sample.Preview</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TerraFluent.Html.Reporting\TerraFluent.Html.Reporting.csproj" />
+  </ItemGroup>
+
+</Project>

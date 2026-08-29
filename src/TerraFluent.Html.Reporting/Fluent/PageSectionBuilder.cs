@@ -44,6 +44,10 @@ public sealed class PageSectionBuilder
     public ImageElementBuilder AddBarcode(string value, double moduleWidthPx = 2, double heightPx = 60, int quietZoneModules = 10) =>
         AddImageCore(BarcodeImage.CreateCode128(value, moduleWidthPx, heightPx, quietZoneModules));
 
+    /// <summary>Adds a QR code as an image. See <see cref="QrCodeImage"/> for encoding scope/limitations.</summary>
+    public ImageElementBuilder AddQrCode(string value, double moduleWidthPx = 4, int quietZoneModules = 4) =>
+        AddImageCore(QrCodeImage.CreateQrCode(value, moduleWidthPx, quietZoneModules));
+
     private ImageElementBuilder AddImageCore(ReportImage image)
     {
         var index = _elements.Count;
@@ -62,11 +66,11 @@ public sealed class PageSectionBuilder
     /// Adds a row of side-by-side columns - e.g. a logo next to the company
     /// name - configured via <paramref name="configure"/>.
     /// </summary>
-    public RowHandle AddRow(Action<RowBuilder> configure, double columnGapPx = 12, RowVerticalAlignment verticalAlignment = RowVerticalAlignment.Middle)
+    public RowHandle AddRow(Action<RowBuilder> configure, double columnGapPx = 12, RowVerticalAlignment verticalAlignment = RowVerticalAlignment.Middle, RowStyle? style = null)
     {
         var builder = new RowBuilder();
         configure(builder);
-        var row = builder.Build(columnGapPx, verticalAlignment);
+        var row = builder.Build(columnGapPx, verticalAlignment, style);
         var index = _elements.Count;
         _elements.Add(row);
         return new RowHandle(row, e => _elements[index] = e);
